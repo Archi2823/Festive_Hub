@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "288933888835",
+    "project_id": "festive-hub-2829f",
+    "storage_bucket": "festive-hub-2829f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288933888835:android:4501139c2decc123be25f6",
+        "android_client_info": {
+          "package_name": "com.archi.festive_hub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "288933888835-fce30v6rfqk7e8m417g4vjkj3nqib7u2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.archi.festive_hub",
+            "certificate_hash": "454affb393025ce5eadd1fab5e4781dd82f5fd7f"
+          }
+        },
+        {
+          "client_id": "288933888835-4lrvb1el0q30vst2v83qsk596f86u20n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzJP-yX0ctexEvvbdknWiTQy_oTUm2E70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "288933888835-4lrvb1el0q30vst2v83qsk596f86u20n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
