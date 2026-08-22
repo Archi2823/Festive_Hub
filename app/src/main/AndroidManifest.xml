@@ -26,6 +26,10 @@
 
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".Splash_screen"
             android:exported="true">
 
             <intent-filter>
