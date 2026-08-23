@@ -1,7 +1,6 @@
 package com.archi.festive_hub;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -10,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -22,7 +22,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView categoryMusic;
     private TextView categoryFood;
     private TextView categoryCulture;
+
     private Button btnFilter;
+
+    private ViewPager2 bannerCarousel;
+    private LinearLayout bannerDots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +48,14 @@ public class MainActivity extends AppCompatActivity {
         categoryCulture = findViewById(R.id.categoryCulture);
 
         btnFilter = findViewById(R.id.btnFilter);
+
+        bannerCarousel = findViewById(R.id.bannerCarousel);
+        bannerDots = findViewById(R.id.bannerDots);
+
+        setupBannerCarousel();
+
         categoryAll.setSelected(true);
+
         profile.setOnClickListener(v ->
                 Toast.makeText(
                         MainActivity.this,
@@ -77,16 +88,89 @@ public class MainActivity extends AppCompatActivity {
                 ).show()
         );
 
-        categoryAll.setOnClickListener(v -> selectCategory("All"));
-        categoryFestivals.setOnClickListener(v -> selectCategory("Festivals"));
-        categoryMusic.setOnClickListener(v -> selectCategory("Music"));
-        categoryFood.setOnClickListener(v -> selectCategory("Food"));
-        categoryCulture.setOnClickListener(v -> selectCategory("Culture"));
+        categoryAll.setOnClickListener(v ->
+                selectCategory("All")
+        );
 
-        btnFilter.setOnClickListener(v -> showFilterDialog());
+        categoryFestivals.setOnClickListener(v ->
+                selectCategory("Festivals")
+        );
+
+        categoryMusic.setOnClickListener(v ->
+                selectCategory("Music")
+        );
+
+        categoryFood.setOnClickListener(v ->
+                selectCategory("Food")
+        );
+
+        categoryCulture.setOnClickListener(v ->
+                selectCategory("Culture")
+        );
+
+        btnFilter.setOnClickListener(v ->
+                showFilterDialog()
+        );
+    }
+
+    private void setupBannerCarousel() {
+
+        EventBannerAdapter adapter = new EventBannerAdapter();
+
+        bannerCarousel.setAdapter(adapter);
+
+        createDots(adapter.getItemCount());
+
+        bannerCarousel.registerOnPageChangeCallback(
+                new ViewPager2.OnPageChangeCallback() {
+
+                    @Override
+                    public void onPageSelected(int position) {
+                        updateDots(position);
+                    }
+                }
+        );
+    }
+
+    private void createDots(int count) {
+
+        bannerDots.removeAllViews();
+
+        for (int i = 0; i < count; i++) {
+
+            TextView dot = new TextView(this);
+
+            dot.setText("●");
+            dot.setTextSize(10);
+            dot.setTextColor(
+                    i == 0
+                            ? getColor(android.R.color.black)
+                            : getColor(android.R.color.darker_gray)
+            );
+
+            dot.setPadding(5, 0, 5, 0);
+
+            bannerDots.addView(dot);
+        }
+    }
+
+    private void updateDots(int position) {
+
+        for (int i = 0; i < bannerDots.getChildCount(); i++) {
+
+            TextView dot =
+                    (TextView) bannerDots.getChildAt(i);
+
+            dot.setTextColor(
+                    i == position
+                            ? getColor(android.R.color.black)
+                            : getColor(android.R.color.darker_gray)
+            );
+        }
     }
 
     private void selectCategory(String category) {
+
         Toast.makeText(
                 MainActivity.this,
                 category + " events selected",
@@ -100,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         categoryCulture.setSelected(false);
 
         switch (category) {
+
             case "All":
                 categoryAll.setSelected(true);
                 break;
