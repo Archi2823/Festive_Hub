@@ -7,7 +7,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.content.Intent;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
@@ -81,13 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 ).show()
         );
 
-        eventCard.setOnClickListener(v ->
-                Toast.makeText(
-                        MainActivity.this,
-                        "Event details coming soon",
-                        Toast.LENGTH_SHORT
-                ).show()
-        );
+        eventCard.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    EventDetail.class
+            );
+            startActivity(intent);
+        });
 
         categoryAll.setOnClickListener(v ->
                 selectCategory("All")
