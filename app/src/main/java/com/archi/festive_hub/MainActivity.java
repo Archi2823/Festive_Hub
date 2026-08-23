@@ -1,5 +1,6 @@
 package com.archi.festive_hub;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -56,13 +57,13 @@ public class MainActivity extends AppCompatActivity {
 
         categoryAll.setSelected(true);
 
-        profile.setOnClickListener(v ->
-                Toast.makeText(
-                        MainActivity.this,
-                        "Profile coming soon",
-                        Toast.LENGTH_SHORT
-                ).show()
-        );
+        profile.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    ChangePassword.class
+            );
+            startActivity(intent);
+        });
 
         cardFestivals.setOnClickListener(v ->
                 Toast.makeText(
