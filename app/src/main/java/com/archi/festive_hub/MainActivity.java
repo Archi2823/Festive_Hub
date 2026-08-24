@@ -58,10 +58,12 @@ public class MainActivity extends AppCompatActivity {
         categoryAll.setSelected(true);
 
         profile.setOnClickListener(v -> {
+
             Intent intent = new Intent(
                     MainActivity.this,
-                    ChangePassword.class
+                    Profile.class
             );
+
             startActivity(intent);
         });
 
