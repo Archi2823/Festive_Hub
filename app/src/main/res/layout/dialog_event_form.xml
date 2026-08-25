@@ -20,11 +20,20 @@
             android:contentDescription="Event Banner"
             android:scaleType="centerCrop" />
 
+        <EditText
+            android:id="@+id/etEventBannerUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event Banner Image URL"
+            android:inputType="textUri"
+            android:singleLine="true" />
+
         <Button
-            android:id="@+id/btnChooseBanner"
+            android:id="@+id/btnPreviewBanner"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="Choose Event Banner"
+            android:layout_marginTop="8dp"
+            android:text="Preview Banner"
             android:textAllCaps="false" />
 
         <EditText
@@ -75,24 +84,6 @@
             android:gravity="top"
             android:hint="Event Description"
             android:inputType="textMultiLine" />
-
-        <ImageView
-            android:id="@+id/ivEventBanner"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginTop="12dp"
-            android:background="#EEEEEE"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Event banner" />
-
-        <Button
-            android:id="@+id/btnSelectBanner"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="10dp"
-            android:text="Select Event Banner"
-            android:textAllCaps="false" />
 
     </LinearLayout>
 

@@ -1,7 +1,6 @@
 package com.archi.festive_hub;
 
 import android.app.AlertDialog;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,15 +12,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+
+import com.bumptech.glide.Glide;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +27,6 @@ public class ManageEventsActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private FirebaseStorage storage;
 
     private LinearLayout eventsContainer;
     private TextView tvNoEvents;
@@ -39,62 +35,21 @@ public class ManageEventsActivity extends AppCompatActivity {
     private static final String ADMIN_EMAIL =
             "upadhyaysisters53@gmail.com";
 
-    private Uri selectedBannerUri;
-
-    private ImageView currentBannerImageView;
-
-    private final ActivityResultLauncher<String> imagePicker =
-            registerForActivityResult(
-                    new ActivityResultContracts.GetContent(),
-                    uri -> {
-
-                        if (uri != null) {
-
-                            selectedBannerUri = uri;
-
-                            if (currentBannerImageView != null) {
-
-                                currentBannerImageView.setImageURI(
-                                        selectedBannerUri
-                                );
-                            }
-                        }
-                    }
-            );
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(
-                R.layout.activity_manage_events
-        );
+        setContentView(R.layout.activity_manage_events);
 
         mAuth = FirebaseAuth.getInstance();
-
         db = FirebaseFirestore.getInstance();
 
-        storage = FirebaseStorage.getInstance();
-
-        eventsContainer =
-                findViewById(
-                        R.id.eventsContainer
-                );
-
-        tvNoEvents =
-                findViewById(
-                        R.id.tvNoEvents
-                );
-
-        btnAddEvent =
-                findViewById(
-                        R.id.btnAddEvent
-                );
+        eventsContainer = findViewById(R.id.eventsContainer);
+        tvNoEvents = findViewById(R.id.tvNoEvents);
+        btnAddEvent = findViewById(R.id.btnAddEvent);
 
         ImageButton btnBack =
-                findViewById(
-                        R.id.btnBack
-                );
+                findViewById(R.id.btnBack);
 
         btnBack.setOnClickListener(
                 v -> finish()
@@ -109,7 +64,6 @@ public class ManageEventsActivity extends AppCompatActivity {
             ).show();
 
             finish();
-
             return;
         }
 
@@ -136,100 +90,94 @@ public class ManageEventsActivity extends AppCompatActivity {
         }
 
         String email =
-                mAuth.getCurrentUser()
-                        .getEmail();
+                mAuth.getCurrentUser().getEmail();
 
-        return email != null &&
-                ADMIN_EMAIL.equalsIgnoreCase(
-                        email
-                );
+        return email != null
+                && ADMIN_EMAIL.equalsIgnoreCase(email);
     }
 
     private void loadEvents() {
 
         db.collection("events")
                 .get()
-                .addOnSuccessListener(
-                        querySnapshot -> {
+                .addOnSuccessListener(querySnapshot -> {
 
-                            eventsContainer.removeAllViews();
+                    eventsContainer.removeAllViews();
 
-                            if (querySnapshot.isEmpty()) {
+                    if (querySnapshot.isEmpty()) {
 
-                                tvNoEvents.setVisibility(
-                                        View.VISIBLE
+                        tvNoEvents.setVisibility(
+                                View.VISIBLE
+                        );
+
+                        return;
+                    }
+
+                    tvNoEvents.setVisibility(
+                            View.GONE
+                    );
+
+                    for (
+                            QueryDocumentSnapshot document :
+                            querySnapshot
+                    ) {
+
+                        String eventId =
+                                document.getId();
+
+                        String eventName =
+                                document.getString(
+                                        "eventName"
                                 );
 
-                                return;
-                            }
-
-                            tvNoEvents.setVisibility(
-                                    View.GONE
-                            );
-
-                            for (
-                                    QueryDocumentSnapshot document :
-                                    querySnapshot
-                            ) {
-
-                                String eventId =
-                                        document.getId();
-
-                                String eventName =
-                                        document.getString(
-                                                "eventName"
-                                        );
-
-                                String eventDate =
-                                        document.getString(
-                                                "eventDate"
-                                        );
-
-                                String eventTime =
-                                        document.getString(
-                                                "eventTime"
-                                        );
-
-                                String eventLocation =
-                                        document.getString(
-                                                "eventLocation"
-                                        );
-
-                                String category =
-                                        document.getString(
-                                                "category"
-                                        );
-
-                                String description =
-                                        document.getString(
-                                                "description"
-                                        );
-
-                                String bannerUrl =
-                                        document.getString(
-                                                "bannerUrl"
-                                        );
-
-                                addEventCard(
-                                        eventId,
-                                        eventName,
-                                        eventDate,
-                                        eventTime,
-                                        eventLocation,
-                                        category,
-                                        description,
-                                        bannerUrl
+                        String eventDate =
+                                document.getString(
+                                        "eventDate"
                                 );
-                            }
-                        }
-                )
-                .addOnFailureListener(
-                        e ->
-                                Toast.makeText(
-                                        this,
-                                        "Unable to load events",
-                                        Toast.LENGTH_SHORT
-                                ).show()
+
+                        String eventTime =
+                                document.getString(
+                                        "eventTime"
+                                );
+
+                        String eventLocation =
+                                document.getString(
+                                        "eventLocation"
+                                );
+
+                        String category =
+                                document.getString(
+                                        "category"
+                                );
+
+                        String description =
+                                document.getString(
+                                        "description"
+                                );
+
+                        String bannerUrl =
+                                document.getString(
+                                        "bannerUrl"
+                                );
+
+                        addEventCard(
+                                eventId,
+                                eventName,
+                                eventDate,
+                                eventTime,
+                                eventLocation,
+                                category,
+                                description,
+                                bannerUrl
+                        );
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Unable to load events",
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
     }
 
@@ -296,9 +244,7 @@ public class ManageEventsActivity extends AppCompatActivity {
                                 ? category
                                 : "N/A");
 
-        tvEventDetails.setText(
-                details
-        );
+        tvEventDetails.setText(details);
 
         btnEdit.setOnClickListener(v ->
                 showAddEditEventDialog(
@@ -320,9 +266,7 @@ public class ManageEventsActivity extends AppCompatActivity {
                 )
         );
 
-        eventsContainer.addView(
-                eventView
-        );
+        eventsContainer.addView(eventView);
     }
 
     private void showAddEditEventDialog(
@@ -336,14 +280,27 @@ public class ManageEventsActivity extends AppCompatActivity {
             String existingBannerUrl
     ) {
 
-        selectedBannerUri = null;
-
         View dialogView =
                 LayoutInflater.from(this)
                         .inflate(
                                 R.layout.dialog_event_form,
                                 null
                         );
+
+        EditText etBannerUrl =
+                dialogView.findViewById(
+                        R.id.etEventBannerUrl
+                );
+
+        Button btnPreviewBanner =
+                dialogView.findViewById(
+                        R.id.btnPreviewBanner
+                );
+
+        ImageView ivEventBanner =
+                dialogView.findViewById(
+                        R.id.ivEventBanner
+                );
 
         EditText etName =
                 dialogView.findViewById(
@@ -375,18 +332,18 @@ public class ManageEventsActivity extends AppCompatActivity {
                         R.id.etEventDescription
                 );
 
-        ImageView ivEventBanner =
-                dialogView.findViewById(
-                        R.id.ivEventBanner
-                );
+        if (existingBannerUrl != null
+                && !existingBannerUrl.isEmpty()) {
 
-        Button btnSelectBanner =
-                dialogView.findViewById(
-                        R.id.btnSelectBanner
-                );
+            etBannerUrl.setText(
+                    existingBannerUrl
+            );
 
-        currentBannerImageView =
-                ivEventBanner;
+            loadBanner(
+                    ivEventBanner,
+                    existingBannerUrl
+            );
+        }
 
         if (eventName != null) {
             etName.setText(eventName);
@@ -412,11 +369,29 @@ public class ManageEventsActivity extends AppCompatActivity {
             etDescription.setText(description);
         }
 
-        btnSelectBanner.setOnClickListener(
-                v -> imagePicker.launch(
-                        "image/*"
-                )
-        );
+        btnPreviewBanner.setOnClickListener(v -> {
+
+            String bannerUrl =
+                    etBannerUrl.getText()
+                            .toString()
+                            .trim();
+
+            if (bannerUrl.isEmpty()) {
+
+                Toast.makeText(
+                        this,
+                        "Please enter an image URL",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            loadBanner(
+                    ivEventBanner,
+                    bannerUrl
+            );
+        });
 
         boolean isEdit =
                 eventId != null;
@@ -441,86 +416,98 @@ public class ManageEventsActivity extends AppCompatActivity {
                         )
                         .create();
 
-        dialog.setOnDismissListener(
-                d -> currentBannerImageView = null
-        );
+        dialog.setOnShowListener(d -> {
 
-        dialog.setOnShowListener(
-                d -> {
-
-                    Button positiveButton =
-                            dialog.getButton(
-                                    AlertDialog.BUTTON_POSITIVE
-                            );
-
-                    positiveButton.setOnClickListener(
-                            v -> {
-
-                                String name =
-                                        etName.getText()
-                                                .toString()
-                                                .trim();
-
-                                String date =
-                                        etDate.getText()
-                                                .toString()
-                                                .trim();
-
-                                String time =
-                                        etTime.getText()
-                                                .toString()
-                                                .trim();
-
-                                String location =
-                                        etLocation.getText()
-                                                .toString()
-                                                .trim();
-
-                                String categoryValue =
-                                        etCategory.getText()
-                                                .toString()
-                                                .trim();
-
-                                String descriptionValue =
-                                        etDescription.getText()
-                                                .toString()
-                                                .trim();
-
-                                if (name.isEmpty() ||
-                                        date.isEmpty() ||
-                                        location.isEmpty()) {
-
-                                    Toast.makeText(
-                                            this,
-                                            "Event name, date and location are required",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-
-                                    return;
-                                }
-
-                                positiveButton.setEnabled(
-                                        false
-                                );
-
-                                saveEvent(
-                                        eventId,
-                                        name,
-                                        date,
-                                        time,
-                                        location,
-                                        categoryValue,
-                                        descriptionValue,
-                                        existingBannerUrl,
-                                        positiveButton,
-                                        dialog
-                                );
-                            }
+            Button positiveButton =
+                    dialog.getButton(
+                            AlertDialog.BUTTON_POSITIVE
                     );
+
+            positiveButton.setOnClickListener(v -> {
+
+                String name =
+                        etName.getText()
+                                .toString()
+                                .trim();
+
+                String date =
+                        etDate.getText()
+                                .toString()
+                                .trim();
+
+                String time =
+                        etTime.getText()
+                                .toString()
+                                .trim();
+
+                String location =
+                        etLocation.getText()
+                                .toString()
+                                .trim();
+
+                String categoryValue =
+                        etCategory.getText()
+                                .toString()
+                                .trim();
+
+                String descriptionValue =
+                        etDescription.getText()
+                                .toString()
+                                .trim();
+
+                String bannerUrl =
+                        etBannerUrl.getText()
+                                .toString()
+                                .trim();
+
+                if (name.isEmpty()
+                        || date.isEmpty()
+                        || location.isEmpty()) {
+
+                    Toast.makeText(
+                            this,
+                            "Event name, date and location are required",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    return;
                 }
-        );
+
+                positiveButton.setEnabled(false);
+
+                saveEvent(
+                        eventId,
+                        name,
+                        date,
+                        time,
+                        location,
+                        categoryValue,
+                        descriptionValue,
+                        bannerUrl,
+                        positiveButton,
+                        dialog
+                );
+            });
+        });
 
         dialog.show();
+    }
+
+    private void loadBanner(
+            ImageView imageView,
+            String bannerUrl
+    ) {
+
+        Glide.with(this)
+                .load(bannerUrl)
+                .placeholder(
+                        android.R.drawable.ic_menu_gallery
+                )
+                .error(
+                        android.R.drawable.ic_dialog_alert
+                )
+                .centerCrop()
+                .into(imageView);
     }
 
     private void saveEvent(
@@ -531,7 +518,7 @@ public class ManageEventsActivity extends AppCompatActivity {
             String location,
             String category,
             String description,
-            String existingBannerUrl,
+            String bannerUrl,
             Button positiveButton,
             AlertDialog dialog
     ) {
@@ -556,91 +543,19 @@ public class ManageEventsActivity extends AppCompatActivity {
                         .document()
                         .getId();
 
-        if (selectedBannerUri != null) {
-
-            Toast.makeText(
-                    this,
-                    "Uploading banner...",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            StorageReference imageReference =
-                    storage.getReference()
-                            .child(
-                                    "eventBanners/"
-                                            + documentId
-                                            + "_"
-                                            + System.currentTimeMillis()
-                                            + ".jpg"
-                            );
-
-            imageReference
-                    .putFile(selectedBannerUri)
-                    .addOnSuccessListener(
-                            taskSnapshot ->
-                                    imageReference
-                                            .getDownloadUrl()
-                                            .addOnSuccessListener(
-                                                    uri ->
-                                                            saveEventToFirestore(
-                                                                    documentId,
-                                                                    eventId,
-                                                                    name,
-                                                                    date,
-                                                                    time,
-                                                                    location,
-                                                                    category,
-                                                                    description,
-                                                                    uri.toString(),
-                                                                    positiveButton,
-                                                                    dialog
-                                                            )
-                                            )
-                                            .addOnFailureListener(
-                                                    e ->
-                                                            uploadFailed(
-                                                                    positiveButton
-                                                            )
-                                            )
-                    )
-                    .addOnFailureListener(
-                            e ->
-                                    uploadFailed(
-                                            positiveButton
-                                    )
-                    );
-
-        } else {
-
-            saveEventToFirestore(
-                    documentId,
-                    eventId,
-                    name,
-                    date,
-                    time,
-                    location,
-                    category,
-                    description,
-                    existingBannerUrl,
-                    positiveButton,
-                    dialog
-            );
-        }
-    }
-
-    private void uploadFailed(
-            Button positiveButton
-    ) {
-
-        positiveButton.setEnabled(
-                true
+        saveEventToFirestore(
+                documentId,
+                eventId,
+                name,
+                date,
+                time,
+                location,
+                category,
+                description,
+                bannerUrl,
+                positiveButton,
+                dialog
         );
-
-        Toast.makeText(
-                this,
-                "Unable to upload event banner",
-                Toast.LENGTH_LONG
-        ).show();
     }
 
     private void saveEventToFirestore(
@@ -702,68 +617,58 @@ public class ManageEventsActivity extends AppCompatActivity {
             db.collection("events")
                     .document(documentId)
                     .set(event)
-                    .addOnSuccessListener(
-                            unused -> {
+                    .addOnSuccessListener(unused -> {
 
-                                Toast.makeText(
-                                        this,
-                                        "Event added successfully",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                        Toast.makeText(
+                                this,
+                                "Event added successfully",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                                dialog.dismiss();
+                        dialog.dismiss();
 
-                                loadEvents();
-                            }
-                    )
-                    .addOnFailureListener(
-                            e -> {
+                        loadEvents();
+                    })
+                    .addOnFailureListener(e -> {
 
-                                positiveButton.setEnabled(
-                                        true
-                                );
+                        positiveButton.setEnabled(true);
 
-                                Toast.makeText(
-                                        this,
-                                        "Unable to add event",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                    );
+                        Toast.makeText(
+                                this,
+                                "Unable to add event: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    });
 
         } else {
 
             db.collection("events")
                     .document(eventId)
                     .update(event)
-                    .addOnSuccessListener(
-                            unused -> {
+                    .addOnSuccessListener(unused -> {
 
-                                Toast.makeText(
-                                        this,
-                                        "Event updated successfully",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                        Toast.makeText(
+                                this,
+                                "Event updated successfully",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                                dialog.dismiss();
+                        dialog.dismiss();
 
-                                loadEvents();
-                            }
-                    )
-                    .addOnFailureListener(
-                            e -> {
+                        loadEvents();
+                    })
+                    .addOnFailureListener(e -> {
 
-                                positiveButton.setEnabled(
-                                        true
-                                );
+                        positiveButton.setEnabled(true);
 
-                                Toast.makeText(
-                                        this,
-                                        "Unable to update event",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                    );
+                        Toast.makeText(
+                                this,
+                                "Unable to update event: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    });
         }
     }
 
@@ -778,15 +683,15 @@ public class ManageEventsActivity extends AppCompatActivity {
                 )
                 .setMessage(
                         "Delete \"" +
-                                eventName +
+                                (eventName != null
+                                        ? eventName
+                                        : "this event") +
                                 "\"?"
                 )
                 .setPositiveButton(
                         "Delete",
                         (dialog, which) ->
-                                deleteEvent(
-                                        eventId
-                                )
+                                deleteEvent(eventId)
                 )
                 .setNegativeButton(
                         "Cancel",
@@ -813,25 +718,23 @@ public class ManageEventsActivity extends AppCompatActivity {
         db.collection("events")
                 .document(eventId)
                 .delete()
-                .addOnSuccessListener(
-                        unused -> {
+                .addOnSuccessListener(unused -> {
 
-                            Toast.makeText(
-                                    this,
-                                    "Event deleted successfully",
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                    Toast.makeText(
+                            this,
+                            "Event deleted successfully",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
-                            loadEvents();
-                        }
-                )
-                .addOnFailureListener(
-                        e ->
-                                Toast.makeText(
-                                        this,
-                                        "Unable to delete event",
-                                        Toast.LENGTH_SHORT
-                                ).show()
+                    loadEvents();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Unable to delete event: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
     }
 }
