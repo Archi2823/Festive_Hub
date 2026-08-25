@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etCollegeName"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="College Name"
+        android:inputType="textCapWords" />
+
+    <EditText
+        android:id="@+id/etCollegeCity"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:hint="City"
+        android:inputType="textCapWords" />
+
+    <EditText
+        android:id="@+id/etCollegeContact"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:hint="Contact"
+        android:inputType="phone" />
+
+</LinearLayout>

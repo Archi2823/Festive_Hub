@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginEnd="20dp"
+    android:background="@drawable/bg_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="75dp"
+        android:layout_height="85dp"
+        android:background="@drawable/bg_date"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvMainEventDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15"
+            android:textColor="#F26B21"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvMainEventMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AUG"
+            android:textColor="#555555"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvMainEventName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Celebrate Together"
+            android:textColor="#222222"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvMainEventCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Festivals"
+            android:textColor="#F26B21"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvMainEventLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="📍 City Celebration Ground"
+            android:textColor="#777777"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="›"
+        android:textColor="#F26B21"
+        android:textSize="28sp" />
+
+</LinearLayout>

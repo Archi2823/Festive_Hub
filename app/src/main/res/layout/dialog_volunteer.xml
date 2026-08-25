@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etVolunteerName"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Volunteer Name"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/etVolunteerEmail"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:hint="Email"
+        android:inputType="textEmailAddress" />
+
+    <EditText
+        android:id="@+id/etVolunteerPhone"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:hint="Phone"
+        android:inputType="phone" />
+
+    <EditText
+        android:id="@+id/etVolunteerCollege"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:hint="College"
+        android:inputType="textCapWords" />
+
+</LinearLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF9F4"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="Back"
+                app:tint="#222222" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Manage Events"
+                android:textColor="#222222"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="45dp"
+                android:layout_height="45dp" />
+
+        </LinearLayout>
+
+
+        <!-- Add Event Button -->
+        <Button
+            android:id="@+id/btnAddEvent"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="#F26B21"
+            android:text="+ Add Event"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+
+        <!-- No Events Message -->
+        <TextView
+            android:id="@+id/tvNoEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:text="No events available."
+            android:textColor="#777777"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+
+        <!-- Events Container -->
+        <LinearLayout
+            android:id="@+id/eventsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+</ScrollView>

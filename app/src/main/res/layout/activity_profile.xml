@@ -2,12 +2,12 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFF8F2">
 
-    <!-- Header -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,7 +25,7 @@
             android:background="@android:color/transparent"
             android:src="@drawable/ic_arrow_back"
             android:contentDescription="Back"
-            android:tint="@android:color/white" />
+            app:tint="@android:color/white" />
 
         <TextView
             android:layout_width="0dp"
@@ -37,6 +37,15 @@
             android:textStyle="bold"
             android:gravity="center" />
 
+        <ImageButton
+            android:id="@+id/btnProfileMenu"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_more"
+            android:contentDescription="Profile menu"
+            app:tint="@android:color/white" />
+
         <View
             android:layout_width="44dp"
             android:layout_height="44dp" />
@@ -44,7 +53,6 @@
     </LinearLayout>
 
 
-    <!-- Content -->
 
     <ScrollView
         android:layout_width="match_parent"
@@ -56,24 +64,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
-
-
-            <!-- Volunteer Scanner Button -->
-
-            <Button
-                android:id="@+id/btnVolunteerScanner"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginBottom="20dp"
-                android:text="Volunteer Scanner"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#F26B21"
-                android:visibility="gone" />
-
-
-            <!-- Profile Card -->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -89,9 +79,9 @@
                     android:background="@drawable/bg_circle_light"
                     android:src="@drawable/ic_profile"
                     android:contentDescription="Profile"
-                    android:tint="#FF7A00"
                     android:clickable="false"
-                    android:focusable="false" />
+                    android:focusable="false"
+                    app:tint="#FF7A00" />
 
                 <TextView
                     android:id="@+id/tvProfileTitle"

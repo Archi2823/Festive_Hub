@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +27,8 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 public class Profile extends AppCompatActivity {
 
-    private Button btnVolunteerScanner;
+    private static final String ADMIN_EMAIL =
+            "upadhyaysisters53@gmail.com";
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -34,17 +36,12 @@ public class Profile extends AppCompatActivity {
     private LinearLayout registeredEventsContainer;
     private TextView tvNoEvents;
 
-    private static final String VOLUNTEER_EMAIL =
-            "upadhyaysisters53@gmail.com";
+    private ImageButton btnProfileMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-
-        setContentView(
-                R.layout.activity_profile
-        );
+        setContentView(R.layout.activity_profile);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -52,89 +49,108 @@ public class Profile extends AppCompatActivity {
         ImageButton btnBack =
                 findViewById(R.id.btnBack);
 
+        btnProfileMenu =
+                findViewById(R.id.btnProfileMenu);
+
         registeredEventsContainer =
-                findViewById(
-                        R.id.registeredEventsContainer
-                );
+                findViewById(R.id.registeredEventsContainer);
 
         tvNoEvents =
-                findViewById(
-                        R.id.tvNoEvents
-                );
+                findViewById(R.id.tvNoEvents);
 
-        btnVolunteerScanner =
-                findViewById(
-                        R.id.btnVolunteerScanner
-                );
+        btnBack.setOnClickListener(v -> finish());
 
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
+        setupProfileMenu();
 
-        /*
-         * Check whether current user is the
-         * authorized volunteer.
-         */
-        checkVolunteerAccess();
-
-        /*
-         * Load user's registered events.
-         */
         loadRegisteredEvents();
     }
 
-    private void checkVolunteerAccess() {
+    private void setupProfileMenu() {
 
-        /*
-         * Hide button by default.
-         */
-        btnVolunteerScanner.setVisibility(
-                View.GONE
-        );
+        btnProfileMenu.setOnClickListener(v -> {
 
-        if (mAuth.getCurrentUser() == null) {
-            return;
-        }
+            if (mAuth.getCurrentUser() == null) {
+                return;
+            }
 
-        String email =
-                mAuth.getCurrentUser().getEmail();
+            String email =
+                    mAuth.getCurrentUser().getEmail();
 
-        if (email != null &&
-                email.equalsIgnoreCase(
-                        VOLUNTEER_EMAIL
-                )) {
+            if (email == null ||
+                    !email.equalsIgnoreCase(ADMIN_EMAIL)) {
 
-            /*
-             * Authorized volunteer.
-             */
-            btnVolunteerScanner.setVisibility(
-                    View.VISIBLE
+                return;
+            }
+
+            PopupMenu popupMenu =
+                    new PopupMenu(
+                            Profile.this,
+                            btnProfileMenu
+                    );
+
+            popupMenu.getMenu().add(
+                    "Admin Panel"
             );
 
-            btnVolunteerScanner.setOnClickListener(
-                    v -> {
+            popupMenu.getMenu().add(
+                    "Volunteer Scanner"
+            );
 
-                        Intent intent =
-                                new Intent(
-                                        Profile.this,
-                                        VolunteerScanner.class
-                                );
+            popupMenu.setOnMenuItemClickListener(
+                    item -> {
 
-                        startActivity(intent);
+                        String selected =
+                                item.getTitle().toString();
+
+                        if (selected.equals(
+                                "Admin Panel"
+                        )) {
+
+                            Intent intent =
+                                    new Intent(
+                                            Profile.this,
+                                            AdminActivity.class
+                                    );
+
+                            startActivity(intent);
+
+                            return true;
+                        }
+
+                        if (selected.equals(
+                                "Volunteer Scanner"
+                        )) {
+
+                            Intent intent =
+                                    new Intent(
+                                            Profile.this,
+                                            VolunteerScanner.class
+                                    );
+
+                            startActivity(intent);
+
+                            return true;
+                        }
+
+                        return false;
                     }
             );
-        }
+
+            popupMenu.show();
+        });
     }
 
     private void loadRegisteredEvents() {
 
         if (mAuth.getCurrentUser() == null) {
 
-            Toast.makeText(
-                    this,
-                    "Please login first",
-                    Toast.LENGTH_SHORT
-            ).show();
+            tvNoEvents.setVisibility(
+                    View.VISIBLE
+            );
+
+            tvNoEvents.setText(
+                    "Please login to view your events."
+            );
 
             return;
         }
@@ -148,73 +164,81 @@ public class Profile extends AppCompatActivity {
                         userId
                 )
                 .get()
-                .addOnSuccessListener(
-                        querySnapshot -> {
+                .addOnSuccessListener(querySnapshot -> {
 
-                            registeredEventsContainer
-                                    .removeAllViews();
+                    registeredEventsContainer
+                            .removeAllViews();
 
-                            if (querySnapshot.isEmpty()) {
+                    if (querySnapshot.isEmpty()) {
 
-                                tvNoEvents.setVisibility(
-                                        View.VISIBLE
+                        tvNoEvents.setVisibility(
+                                View.VISIBLE
+                        );
+
+                        tvNoEvents.setText(
+                                "You haven't joined any events yet."
+                        );
+
+                        return;
+                    }
+
+                    tvNoEvents.setVisibility(
+                            View.GONE
+                    );
+
+                    for (
+                            QueryDocumentSnapshot document :
+                            querySnapshot
+                    ) {
+
+                        String eventName =
+                                document.getString(
+                                        "eventName"
                                 );
 
-                            } else {
-
-                                tvNoEvents.setVisibility(
-                                        View.GONE
+                        String eventDate =
+                                document.getString(
+                                        "eventDate"
                                 );
 
-                                for (
-                                        QueryDocumentSnapshot document :
-                                        querySnapshot
-                                ) {
+                        String eventLocation =
+                                document.getString(
+                                        "eventLocation"
+                                );
 
-                                    String eventName =
-                                            document.getString(
-                                                    "eventName"
-                                            );
+                        String status =
+                                document.getString(
+                                        "status"
+                                );
 
-                                    String eventDate =
-                                            document.getString(
-                                                    "eventDate"
-                                            );
+                        String registrationId =
+                                document.getId();
 
-                                    String eventLocation =
-                                            document.getString(
-                                                    "eventLocation"
-                                            );
+                        addEventCard(
+                                eventName,
+                                eventDate,
+                                eventLocation,
+                                status,
+                                registrationId
+                        );
+                    }
+                })
+                .addOnFailureListener(e -> {
 
-                                    String status =
-                                            document.getString(
-                                                    "status"
-                                            );
+                    tvNoEvents.setVisibility(
+                            View.VISIBLE
+                    );
 
-                                    String registrationId =
-                                            document.getId();
+                    tvNoEvents.setText(
+                            "Unable to load registered events."
+                    );
 
-                                    addEventCard(
-                                            eventName,
-                                            eventDate,
-                                            eventLocation,
-                                            status,
-                                            registrationId
-                                    );
-                                }
-                            }
-                        }
-                )
-                .addOnFailureListener(
-                        e -> {
-
-                            Toast.makeText(
-                                    this,
-                                    "Unable to load registered events",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                );
+                    Toast.makeText(
+                            Profile.this,
+                            "Unable to load registered events",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
     }
 
     private void addEventCard(
@@ -281,12 +305,25 @@ public class Profile extends AppCompatActivity {
                         : "Registered"
         );
 
-        btnShowQr.setOnClickListener(
-                v -> showQrDialog(
-                        eventName,
-                        registrationId
-                )
-        );
+        if ("Registered".equals(status)) {
+
+            btnShowQr.setVisibility(
+                    View.VISIBLE
+            );
+
+            btnShowQr.setOnClickListener(v ->
+                    showQrDialog(
+                            eventName,
+                            registrationId
+                    )
+            );
+
+        } else {
+
+            btnShowQr.setVisibility(
+                    View.GONE
+            );
+        }
 
         registeredEventsContainer.addView(
                 eventView
@@ -298,11 +335,26 @@ public class Profile extends AppCompatActivity {
             String registrationId
     ) {
 
+        if (registrationId == null ||
+                registrationId.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Registration ID not found",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         String qrData =
-                "FESTIVE_HUB|EVENT|"
-                        + eventName
-                        + "|REGISTRATION|"
-                        + registrationId;
+                "FESTIVE_HUB|" +
+                        "EVENT|" +
+                        (eventName != null
+                                ? eventName
+                                : "Event") +
+                        "|REGISTRATION|" +
+                        registrationId;
 
         Bitmap qrBitmap =
                 generateQrCode(qrData);
@@ -349,14 +401,8 @@ public class Profile extends AppCompatActivity {
         );
 
         title.setTextSize(20);
-
-        title.setTextColor(
-                Color.BLACK
-        );
-
-        title.setGravity(
-                Gravity.CENTER
-        );
+        title.setTextColor(Color.BLACK);
+        title.setGravity(Gravity.CENTER);
 
         ImageView qrImage =
                 new ImageView(this);
@@ -393,14 +439,8 @@ public class Profile extends AppCompatActivity {
         );
 
         instruction.setTextSize(14);
-
-        instruction.setTextColor(
-                Color.DKGRAY
-        );
-
-        instruction.setGravity(
-                Gravity.CENTER
-        );
+        instruction.setTextColor(Color.DKGRAY);
+        instruction.setGravity(Gravity.CENTER);
 
         Button closeButton =
                 new Button(this);
@@ -418,17 +458,7 @@ public class Profile extends AppCompatActivity {
         layout.addView(instruction);
         layout.addView(closeButton);
 
-        dialog.setContentView(
-                layout
-        );
-
-        if (dialog.getWindow() != null) {
-
-            dialog.getWindow()
-                    .setBackgroundDrawableResource(
-                            android.R.color.transparent
-                    );
-        }
+        dialog.setContentView(layout);
 
         dialog.show();
     }
@@ -476,6 +506,16 @@ public class Profile extends AppCompatActivity {
         } catch (WriterException e) {
 
             return null;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        if (registeredEventsContainer != null) {
+            loadRegisteredEvents();
         }
     }
 }

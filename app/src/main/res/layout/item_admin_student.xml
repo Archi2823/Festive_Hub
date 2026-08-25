@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:orientation="vertical"
+    android:padding="18dp"
+    android:background="@drawable/bg_card">
+
+    <TextView
+        android:id="@+id/tvStudentId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Student ID"
+        android:textColor="#222222"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvStudentEvent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Event"
+        android:textColor="#555555"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvStudentDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Date"
+        android:textColor="#777777"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvStudentLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Location"
+        android:textColor="#777777"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvStudentStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Registered"
+        android:textColor="#F26B21"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnRemoveStudent"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="14dp"
+        android:text="Remove Registration"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#D32F2F" />
+
+</LinearLayout>

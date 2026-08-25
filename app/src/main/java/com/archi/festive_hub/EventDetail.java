@@ -23,29 +23,72 @@ public class EventDetail extends AppCompatActivity {
     private Button btnBookEvent;
     private Button btnShowQr;
 
-    private static final String EVENT_ID = "celebrate_together";
+    private String eventId;
+    private String eventName;
+    private String eventDate;
+    private String eventTime;
+    private String eventLocation;
+    private String category;
+    private String description;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_detail);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        setContentView(
+                R.layout.activity_event_detail
+        );
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBookEvent = findViewById(R.id.btnBookEvent);
-        btnShowQr = findViewById(R.id.btnShowQr);
+        mAuth =
+                FirebaseAuth.getInstance();
 
-        btnBack.setOnClickListener(v -> finish());
+        db =
+                FirebaseFirestore.getInstance();
 
-        checkRegistration();
+        ImageButton btnBack =
+                findViewById(R.id.btnBack);
+
+        btnBookEvent =
+                findViewById(R.id.btnBookEvent);
+
+        btnShowQr =
+                findViewById(R.id.btnShowQr);
+
+        eventId =
+                getIntent().getStringExtra(
+                        "eventId"
+                );
+
+        if (eventId == null ||
+                eventId.trim().isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Event not found",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
+        btnBack.setOnClickListener(
+                v -> finish()
+        );
+
+        loadEvent();
 
         btnBookEvent.setOnClickListener(v -> {
 
-            if (btnBookEvent.getText().toString().equals("Join Event")) {
+            if (btnBookEvent
+                    .getText()
+                    .toString()
+                    .startsWith("Join")) {
+
                 createRegistration();
+
             } else {
+
                 deleteRegistration();
             }
         });
@@ -63,35 +106,47 @@ public class EventDetail extends AppCompatActivity {
                 return;
             }
 
-            String registrationId = getRegistrationId();
+            String registrationId =
+                    getRegistrationId();
 
             if (registrationId == null) {
                 return;
             }
 
-            db.collection("eventRegistrations")
+            db.collection(
+                            "eventRegistrations"
+                    )
                     .document(registrationId)
                     .get()
-                    .addOnSuccessListener(documentSnapshot -> {
+                    .addOnSuccessListener(
+                            documentSnapshot -> {
 
-                        if (documentSnapshot.exists()) {
+                                if (documentSnapshot
+                                        .exists()) {
 
-                            Intent intent = new Intent(
-                                    EventDetail.this,
-                                    EventQrActivity.class
-                            );
+                                    Intent intent =
+                                            new Intent(
+                                                    EventDetail.this,
+                                                    EventQrActivity.class
+                                            );
 
-                            startActivity(intent);
+                                    intent.putExtra(
+                                            "registrationId",
+                                            registrationId
+                                    );
 
-                        } else {
+                                    startActivity(intent);
 
-                            Toast.makeText(
-                                    EventDetail.this,
-                                    "Please join the event first",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                    })
+                                } else {
+
+                                    Toast.makeText(
+                                            EventDetail.this,
+                                            "Please join the event first",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
+                            }
+                    )
                     .addOnFailureListener(e ->
                             Toast.makeText(
                                     EventDetail.this,
@@ -102,39 +157,131 @@ public class EventDetail extends AppCompatActivity {
         });
     }
 
+    private void loadEvent() {
+
+        db.collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(
+                        documentSnapshot -> {
+
+                            if (!documentSnapshot.exists()) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Event not found",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                finish();
+                                return;
+                            }
+
+                            eventName =
+                                    documentSnapshot.getString(
+                                            "eventName"
+                                    );
+
+                            eventDate =
+                                    documentSnapshot.getString(
+                                            "eventDate"
+                                    );
+
+                            eventTime =
+                                    documentSnapshot.getString(
+                                            "eventTime"
+                                    );
+
+                            eventLocation =
+                                    documentSnapshot.getString(
+                                            "eventLocation"
+                                    );
+
+                            category =
+                                    documentSnapshot.getString(
+                                            "category"
+                                    );
+
+                            description =
+                                    documentSnapshot.getString(
+                                            "description"
+                                    );
+
+                            if (eventName == null) {
+                                eventName = "Event";
+                            }
+
+                            if (eventDate == null) {
+                                eventDate = "";
+                            }
+
+                            if (eventTime == null) {
+                                eventTime = "";
+                            }
+
+                            if (eventLocation == null) {
+                                eventLocation = "";
+                            }
+
+                            if (category == null) {
+                                category = "";
+                            }
+
+                            if (description == null) {
+                                description = "";
+                            }
+
+                            checkRegistration();
+                        }
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Unable to load event",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
+    }
+
     private String getRegistrationId() {
 
-        if (mAuth.getCurrentUser() == null) {
+        if (mAuth.getCurrentUser() == null ||
+                eventId == null) {
+
             return null;
         }
 
         return mAuth.getCurrentUser().getUid()
                 + "_"
-                + EVENT_ID;
+                + eventId;
     }
 
     private void checkRegistration() {
 
-        String registrationId = getRegistrationId();
+        String registrationId =
+                getRegistrationId();
 
         if (registrationId == null) {
-            btnBookEvent.setText("Join Event");
+
+            updateButtonToJoin();
             return;
         }
 
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
+                .addOnSuccessListener(
+                        documentSnapshot -> {
 
-                    if (documentSnapshot.exists()) {
-                        updateButtonToJoined();
-                    } else {
-                        updateButtonToJoin();
-                    }
-                })
-                .addOnFailureListener(e ->
-                        updateButtonToJoin()
+                            if (documentSnapshot.exists()) {
+                                updateButtonToJoined();
+                            } else {
+                                updateButtonToJoin();
+                            }
+                        }
+                )
+                .addOnFailureListener(
+                        e -> updateButtonToJoin()
                 );
     }
 
@@ -151,9 +298,15 @@ public class EventDetail extends AppCompatActivity {
             return;
         }
 
-        String registrationId = getRegistrationId();
+        String registrationId =
+                getRegistrationId();
 
-        Map<String, Object> registration = new HashMap<>();
+        if (registrationId == null) {
+            return;
+        }
+
+        Map<String, Object> registration =
+                new HashMap<>();
 
         registration.put(
                 "userId",
@@ -162,22 +315,37 @@ public class EventDetail extends AppCompatActivity {
 
         registration.put(
                 "eventId",
-                EVENT_ID
+                eventId
         );
 
         registration.put(
                 "eventName",
-                "Celebrate Together"
+                eventName
         );
 
         registration.put(
                 "eventDate",
-                "15 August 2026"
+                eventDate
+        );
+
+        registration.put(
+                "eventTime",
+                eventTime
         );
 
         registration.put(
                 "eventLocation",
-                "City Celebration Ground"
+                eventLocation
+        );
+
+        registration.put(
+                "category",
+                category
+        );
+
+        registration.put(
+                "description",
+                description
         );
 
         registration.put(
@@ -202,83 +370,59 @@ public class EventDetail extends AppCompatActivity {
 
                     Toast.makeText(
                             EventDetail.this,
-                            "Registration failed: " + e.getMessage(),
+                            "Registration failed: "
+                                    + e.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
                 });
     }
 
-    private void updateRegistration() {
-
-        String registrationId = getRegistrationId();
-
-        if (registrationId == null) {
-            return;
-        }
-
-        Map<String, Object> updates = new HashMap<>();
-
-        updates.put(
-                "status",
-                "Registered"
-        );
-
-        db.collection("eventRegistrations")
-                .document(registrationId)
-                .update(updates)
-                .addOnSuccessListener(unused -> {
-
-                    Toast.makeText(
-                            EventDetail.this,
-                            "Registration updated",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    updateButtonToJoined();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(
-                                EventDetail.this,
-                                "Update failed",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
-    }
-
     private void deleteRegistration() {
 
-        String registrationId = getRegistrationId();
+        String registrationId =
+                getRegistrationId();
 
         if (registrationId == null) {
             return;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Cancel Registration")
-                .setMessage("Do you want to leave this event?")
+                .setTitle(
+                        "Cancel Registration"
+                )
+                .setMessage(
+                        "Do you want to leave this event?"
+                )
                 .setPositiveButton(
                         "Yes",
                         (dialog, which) -> {
 
-                            db.collection("eventRegistrations")
-                                    .document(registrationId)
+                            db.collection(
+                                            "eventRegistrations"
+                                    )
+                                    .document(
+                                            registrationId
+                                    )
                                     .delete()
-                                    .addOnSuccessListener(unused -> {
+                                    .addOnSuccessListener(
+                                            unused -> {
 
-                                        Toast.makeText(
-                                                EventDetail.this,
-                                                "Registration cancelled",
-                                                Toast.LENGTH_SHORT
-                                        ).show();
+                                                Toast.makeText(
+                                                        EventDetail.this,
+                                                        "Registration cancelled",
+                                                        Toast.LENGTH_SHORT
+                                                ).show();
 
-                                        updateButtonToJoin();
-                                    })
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(
-                                                    EventDetail.this,
-                                                    "Unable to cancel registration",
-                                                    Toast.LENGTH_SHORT
-                                            ).show()
+                                                updateButtonToJoin();
+                                            }
+                                    )
+                                    .addOnFailureListener(
+                                            e ->
+                                                    Toast.makeText(
+                                                            EventDetail.this,
+                                                            "Unable to cancel registration",
+                                                            Toast.LENGTH_SHORT
+                                                    ).show()
                                     );
                         }
                 )
@@ -291,13 +435,19 @@ public class EventDetail extends AppCompatActivity {
 
     private void updateButtonToJoined() {
 
-        btnBookEvent.setText("Joined ✓");
+        btnBookEvent.setText(
+                "Joined"
+        );
+
         btnBookEvent.setEnabled(true);
     }
 
     private void updateButtonToJoin() {
 
-        btnBookEvent.setText("Join Event");
+        btnBookEvent.setText(
+                "Join Event"
+        );
+
         btnBookEvent.setEnabled(true);
     }
 }

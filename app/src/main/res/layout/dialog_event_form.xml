@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/etEventName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event Name"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/etEventDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Event Date"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/etEventTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Event Time"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/etEventLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Event Location"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/etEventCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Category"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/etEventDescription"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
+            android:gravity="top"
+            android:hint="Event Description"
+            android:inputType="textMultiLine" />
+
+    </LinearLayout>
+
+</ScrollView>

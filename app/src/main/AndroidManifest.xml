@@ -51,6 +51,28 @@
             android:exported="false" />
 
         <activity
+            android:name=".AdminActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageEventsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageStudentsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManageVolunteersActivity"
+            android:exported="false" />
+
+        <activity android:name=".NotificationActivity" />
+
+        <activity
+            android:name=".CollegeListActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
