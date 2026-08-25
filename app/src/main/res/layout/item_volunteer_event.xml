@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp"
+    android:orientation="vertical"
+    android:padding="18dp"
+    android:background="@drawable/bg_card">
+
+    <TextView
+        android:id="@+id/tvVolunteerEventName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Name"
+        android:textColor="#222222"
+        android:textSize="19sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvVolunteerEventDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Date"
+        android:textColor="#666666"
+        android:textSize="14sp"
+        android:lineSpacingExtra="3dp" />
+
+</LinearLayout>

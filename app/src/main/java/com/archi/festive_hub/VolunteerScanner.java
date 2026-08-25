@@ -21,7 +21,7 @@ public class VolunteerScanner extends AppCompatActivity {
     private Button btnScan;
 
     private static final String VOLUNTEER_EMAIL =
-            "upadhyaysisters53@gmail.com";
+            "test@gmail.com";
 
     private final androidx.activity.result.ActivityResultLauncher<ScanOptions>
             barcodeLauncher =

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF9F4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Volunteer Dashboard"
+            android:textColor="#222222"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Help make every event a celebration!"
+            android:textColor="#777777"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/bg_admin_card"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📷"
+                android:textSize="32sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scan QR Code"
+                android:textColor="#222222"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Verify attendee registration and mark event attendance."
+                android:textColor="#777777"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <Button
+                android:id="@+id/btnScanQr"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="14dp"
+                android:text="Scan QR"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#F26B21" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/bg_admin_card"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅"
+                android:textSize="32sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="My Assigned Events"
+                android:textColor="#222222"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View events assigned to you as a volunteer."
+                android:textColor="#777777"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <Button
+                android:id="@+id/btnMyEvents"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="14dp"
+                android:text="View My Events"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#F26B21" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/bg_admin_card"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤"
+                android:textSize="32sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="My Profile"
+                android:textColor="#222222"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View and manage your volunteer profile."
+                android:textColor="#777777"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <Button
+                android:id="@+id/btnVolunteerProfile"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="14dp"
+                android:text="Open Profile"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:backgroundTint="#F26B21" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnVolunteerLogout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:text="Logout"
+            android:textAllCaps="false"
+            android:textColor="#D32F2F"
+            android:textStyle="bold"
+            android:backgroundTint="#FFFFFF" />
+
+    </LinearLayout>
+
+</ScrollView>

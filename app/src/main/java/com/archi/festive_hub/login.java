@@ -20,7 +20,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
 
 public class login extends AppCompatActivity {
 
@@ -32,26 +31,43 @@ public class login extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private GoogleSignInClient googleSignInClient;
 
+    private static final String ADMIN_EMAIL =
+            "upadhyaysisters53@gmail.com";
+
+    private static final String VOLUNTEER_EMAIL =
+            "test@gmail.com";
+
     private final ActivityResultLauncher<Intent> googleSignInLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
 
                         if (result.getData() == null) {
+
                             btnGoogle.setEnabled(true);
                             btnGoogle.setText("Continue with Google");
+
                             return;
                         }
 
                         try {
-                            var task = GoogleSignIn
-                                    .getSignedInAccountFromIntent(result.getData());
 
-                            var account = task.getResult(ApiException.class);
+                            var task = GoogleSignIn
+                                    .getSignedInAccountFromIntent(
+                                            result.getData()
+                                    );
+
+                            var account =
+                                    task.getResult(
+                                            ApiException.class
+                                    );
 
                             if (account.getIdToken() == null) {
+
                                 btnGoogle.setEnabled(true);
-                                btnGoogle.setText("Continue with Google");
+                                btnGoogle.setText(
+                                        "Continue with Google"
+                                );
 
                                 Toast.makeText(
                                         login.this,
@@ -63,17 +79,21 @@ public class login extends AppCompatActivity {
                             }
 
                             AuthCredential credential =
-                                    GoogleAuthProvider.getCredential(
-                                            account.getIdToken(),
-                                            null
-                                    );
+                                    com.google.firebase.auth
+                                            .GoogleAuthProvider
+                                            .getCredential(
+                                                    account.getIdToken(),
+                                                    null
+                                            );
 
                             firebaseGoogleLogin(credential);
 
                         } catch (ApiException e) {
 
                             btnGoogle.setEnabled(true);
-                            btnGoogle.setText("Continue with Google");
+                            btnGoogle.setText(
+                                    "Continue with Google"
+                            );
 
                             Toast.makeText(
                                     login.this,
@@ -87,6 +107,7 @@ public class login extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
@@ -99,15 +120,20 @@ public class login extends AppCompatActivity {
 
         btnBack = findViewById(R.id.btnBack);
 
-        txtForgotPassword = findViewById(R.id.txtForgotPassword);
-        txtSignup = findViewById(R.id.txtSignup);
+        txtForgotPassword =
+                findViewById(R.id.txtForgotPassword);
+
+        txtSignup =
+                findViewById(R.id.txtSignup);
 
         GoogleSignInOptions googleSignInOptions =
                 new GoogleSignInOptions.Builder(
                         GoogleSignInOptions.DEFAULT_SIGN_IN
                 )
                         .requestIdToken(
-                                getString(R.string.default_web_client_id)
+                                getString(
+                                        R.string.default_web_client_id
+                                )
                         )
                         .requestEmail()
                         .build();
@@ -118,13 +144,20 @@ public class login extends AppCompatActivity {
                         googleSignInOptions
                 );
 
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(
+                v -> finish()
+        );
 
-        btnLogin.setOnClickListener(v -> loginUser());
+        btnLogin.setOnClickListener(
+                v -> loginUser()
+        );
 
-        btnGoogle.setOnClickListener(v -> signInWithGoogle());
+        btnGoogle.setOnClickListener(
+                v -> signInWithGoogle()
+        );
 
         txtSignup.setOnClickListener(v -> {
+
             Intent intent = new Intent(
                     login.this,
                     activity_signup.class
@@ -135,6 +168,7 @@ public class login extends AppCompatActivity {
         });
 
         txtForgotPassword.setOnClickListener(v -> {
+
             Intent intent = new Intent(
                     login.this,
                     ForgotPassword.class
@@ -146,70 +180,90 @@ public class login extends AppCompatActivity {
 
     private void loginUser() {
 
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString();
+        String email =
+                etEmail.getText()
+                        .toString()
+                        .trim();
+
+        String password =
+                etPassword.getText()
+                        .toString();
 
         if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Please enter your email");
+
+            etEmail.setError(
+                    "Please enter your email"
+            );
+
             etEmail.requestFocus();
+
             return;
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
+        if (!Patterns.EMAIL_ADDRESS
+                .matcher(email)
+                .matches()) {
+
+            etEmail.setError(
+                    "Please enter a valid email"
+            );
+
             etEmail.requestFocus();
+
             return;
         }
 
         if (TextUtils.isEmpty(password)) {
-            etPassword.setError("Please enter your password");
+
+            etPassword.setError(
+                    "Please enter your password"
+            );
+
             etPassword.requestFocus();
+
             return;
         }
 
         btnLogin.setEnabled(false);
         btnLogin.setText("Logging in...");
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
+        mAuth.signInWithEmailAndPassword(
+                        email,
+                        password
+                )
+                .addOnCompleteListener(
+                        this,
+                        task -> {
 
-                    btnLogin.setEnabled(true);
-                    btnLogin.setText("LOG IN");
+                            btnLogin.setEnabled(true);
+                            btnLogin.setText("LOG IN");
 
-                    if (task.isSuccessful()) {
+                            if (task.isSuccessful()) {
 
-                        Toast.makeText(
-                                login.this,
-                                "Login successful!",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                                Toast.makeText(
+                                        login.this,
+                                        "Login successful!",
+                                        Toast.LENGTH_SHORT
+                                ).show();
 
-                        Intent intent = new Intent(
-                                login.this,
-                                MainActivity.class
-                        );
+                                openCorrectDashboard();
 
-                        intent.setFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK |
-                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        );
+                            } else {
 
-                        startActivity(intent);
+                                String errorMessage =
+                                        task.getException() != null
+                                                ? task.getException()
+                                                .getMessage()
+                                                : "Login failed";
 
-                    } else {
-
-                        String errorMessage =
-                                task.getException() != null
-                                        ? task.getException().getMessage()
-                                        : "Login failed";
-
-                        Toast.makeText(
-                                login.this,
-                                errorMessage,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                                Toast.makeText(
+                                        login.this,
+                                        errorMessage,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        }
+                );
     }
 
     private void signInWithGoogle() {
@@ -217,57 +271,127 @@ public class login extends AppCompatActivity {
         btnGoogle.setEnabled(false);
         btnGoogle.setText("Connecting...");
 
-        googleSignInClient.signOut()
+        googleSignInClient
+                .signOut()
                 .addOnCompleteListener(task -> {
 
                     Intent signInIntent =
-                            googleSignInClient.getSignInIntent();
+                            googleSignInClient
+                                    .getSignInIntent();
 
-                    googleSignInLauncher.launch(signInIntent);
+                    googleSignInLauncher.launch(
+                            signInIntent
+                    );
                 });
     }
 
-    private void firebaseGoogleLogin(AuthCredential credential) {
+    private void firebaseGoogleLogin(
+            AuthCredential credential
+    ) {
 
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
+        mAuth.signInWithCredential(
+                        credential
+                )
+                .addOnCompleteListener(
+                        this,
+                        task -> {
 
-                    btnGoogle.setEnabled(true);
-                    btnGoogle.setText("Continue with Google");
+                            btnGoogle.setEnabled(true);
+                            btnGoogle.setText(
+                                    "Continue with Google"
+                            );
 
-                    if (task.isSuccessful()) {
+                            if (task.isSuccessful()) {
 
-                        Toast.makeText(
-                                login.this,
-                                "Login successful!",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                                Toast.makeText(
+                                        login.this,
+                                        "Login successful!",
+                                        Toast.LENGTH_SHORT
+                                ).show();
 
-                        Intent intent = new Intent(
-                                login.this,
-                                MainActivity.class
-                        );
+                                openCorrectDashboard();
 
-                        intent.setFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK |
-                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        );
+                            } else {
 
-                        startActivity(intent);
+                                String errorMessage =
+                                        task.getException() != null
+                                                ? task.getException()
+                                                .getMessage()
+                                                : "Google Sign-In failed";
 
-                    } else {
+                                Toast.makeText(
+                                        login.this,
+                                        errorMessage,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        }
+                );
+    }
 
-                        String errorMessage =
-                                task.getException() != null
-                                        ? task.getException().getMessage()
-                                        : "Google Sign-In failed";
+    private void openCorrectDashboard() {
 
-                        Toast.makeText(
-                                login.this,
-                                errorMessage,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+        if (mAuth.getCurrentUser() == null) {
+
+            Toast.makeText(
+                    this,
+                    "User account not found",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        String email =
+                mAuth.getCurrentUser()
+                        .getEmail();
+
+        if (email == null) {
+
+            Toast.makeText(
+                    this,
+                    "Unable to identify account",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        Intent intent;
+
+        if (email.equalsIgnoreCase(
+                ADMIN_EMAIL
+        )) {
+
+            intent = new Intent(
+                    login.this,
+                    AdminActivity.class
+            );
+
+        } else if (email.equalsIgnoreCase(
+                VOLUNTEER_EMAIL
+        )) {
+
+            intent = new Intent(
+                    login.this,
+                    VolunteerActivity.class
+            );
+
+        } else {
+
+            intent = new Intent(
+                    login.this,
+                    MainActivity.class
+            );
+        }
+
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+
+        finish();
     }
 }

@@ -77,6 +77,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".VolunteerActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".VolunteerEventsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".Splash_screen"
             android:exported="true">
 

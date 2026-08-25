@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF9F4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:background="@android:color/transparent"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Events"
+            android:textColor="#222222"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <View
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="20dp">
+
+        <LinearLayout
+            android:id="@+id/eventsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvNoEvents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No events assigned to you"
+                android:textColor="#777777"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:padding="40dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
