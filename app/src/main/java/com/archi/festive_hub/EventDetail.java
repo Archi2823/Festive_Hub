@@ -1,5 +1,6 @@
 package com.archi.festive_hub;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -20,6 +21,7 @@ public class EventDetail extends AppCompatActivity {
     private FirebaseFirestore db;
 
     private Button btnBookEvent;
+    private Button btnShowQr;
 
     private static final String EVENT_ID = "celebrate_together";
 
@@ -33,6 +35,7 @@ public class EventDetail extends AppCompatActivity {
 
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBookEvent = findViewById(R.id.btnBookEvent);
+        btnShowQr = findViewById(R.id.btnShowQr);
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -46,6 +49,57 @@ public class EventDetail extends AppCompatActivity {
                 deleteRegistration();
             }
         });
+
+        btnShowQr.setOnClickListener(v -> {
+
+            if (mAuth.getCurrentUser() == null) {
+
+                Toast.makeText(
+                        EventDetail.this,
+                        "Please login first",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            String registrationId = getRegistrationId();
+
+            if (registrationId == null) {
+                return;
+            }
+
+            db.collection("eventRegistrations")
+                    .document(registrationId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+
+                        if (documentSnapshot.exists()) {
+
+                            Intent intent = new Intent(
+                                    EventDetail.this,
+                                    EventQrActivity.class
+                            );
+
+                            startActivity(intent);
+
+                        } else {
+
+                            Toast.makeText(
+                                    EventDetail.this,
+                                    "Please join the event first",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(
+                                    EventDetail.this,
+                                    "Unable to check registration",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+        });
     }
 
     private String getRegistrationId() {
@@ -54,7 +108,9 @@ public class EventDetail extends AppCompatActivity {
             return null;
         }
 
-        return mAuth.getCurrentUser().getUid() + "_" + EVENT_ID;
+        return mAuth.getCurrentUser().getUid()
+                + "_"
+                + EVENT_ID;
     }
 
     private void checkRegistration() {
@@ -77,10 +133,9 @@ public class EventDetail extends AppCompatActivity {
                         updateButtonToJoin();
                     }
                 })
-                .addOnFailureListener(e -> {
-
-                    updateButtonToJoin();
-                });
+                .addOnFailureListener(e ->
+                        updateButtonToJoin()
+                );
     }
 
     private void createRegistration() {
