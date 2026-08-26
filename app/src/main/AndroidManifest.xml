@@ -81,6 +81,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".RegisteredUsersActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".VolunteerEventsActivity"
             android:exported="false" />
 

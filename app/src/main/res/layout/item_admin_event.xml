@@ -27,10 +27,20 @@
         android:textColor="#666666"
         android:textSize="14sp" />
 
+    <Button
+        android:id="@+id/btnRegisteredUsers"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="14dp"
+        android:text="See Registered Users"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#F26B21" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <Button
