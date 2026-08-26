@@ -60,6 +60,31 @@
                 android:padding="10dp"
                 app:srcCompat="@drawable/ic_profile" />
 
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_circle_light"
+                android:contentDescription="Settings"
+                android:padding="12dp"
+                android:src="@android:drawable/ic_menu_preferences"
+                app:tint="#171717" />
+
+            <TextView
+                android:id="@+id/btnVolunteer"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_circle_light"
+                android:clickable="true"
+                android:contentDescription="Volunteer Dashboard"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="🤝"
+                android:textSize="22sp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -374,18 +399,6 @@
             android:textSize="15sp"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/btnSettings"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_circle_light"
-            android:clickable="true"
-            android:contentDescription="Settings"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="⚙"
-            android:textColor="#F26B21"
-            android:textSize="24sp" />
         <LinearLayout
             android:id="@+id/eventsContainer"
             android:layout_width="match_parent"

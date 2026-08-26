@@ -20,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 public class login extends AppCompatActivity {
 
@@ -43,10 +44,8 @@ public class login extends AppCompatActivity {
                     result -> {
 
                         if (result.getData() == null) {
-
                             btnGoogle.setEnabled(true);
                             btnGoogle.setText("Continue with Google");
-
                             return;
                         }
 
@@ -79,12 +78,10 @@ public class login extends AppCompatActivity {
                             }
 
                             AuthCredential credential =
-                                    com.google.firebase.auth
-                                            .GoogleAuthProvider
-                                            .getCredential(
-                                                    account.getIdToken(),
-                                                    null
-                                            );
+                                    GoogleAuthProvider.getCredential(
+                                            account.getIdToken(),
+                                            null
+                                    );
 
                             firebaseGoogleLogin(credential);
 
@@ -107,7 +104,6 @@ public class login extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
@@ -372,13 +368,15 @@ public class login extends AppCompatActivity {
                 VOLUNTEER_EMAIL
         )) {
 
+            // Volunteer uses the same home screen as a normal user.
             intent = new Intent(
                     login.this,
-                    VolunteerActivity.class
+                    MainActivity.class
             );
 
         } else {
 
+            // Normal student/user dashboard.
             intent = new Intent(
                     login.this,
                     MainActivity.class

@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView categoryCulture;
 
     private Button btnFilter;
+    private View btnVolunteer;
 
     private ViewPager2 bannerCarousel;
     private LinearLayout bannerDots;
@@ -38,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText etSearchEvents;
 
     private String selectedCategory = "All";
+
+    private static final String VOLUNTEER_EMAIL =
+            "test@gmail.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,26 @@ public class MainActivity extends AppCompatActivity {
 
         ImageButton profile = findViewById(R.id.btnProfile);
         ImageButton settings = findViewById(R.id.btnSettings);
+
+        btnVolunteer = findViewById(R.id.btnVolunteer);
+
+        profile.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    Profile.class
+            );
+            startActivity(intent);
+        });
+
+        settings.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    SettingsActivity.class
+            );
+            startActivity(intent);
+        });
+
+        setupVolunteerButton();
 
         categoryAll = findViewById(R.id.categoryAll);
         categoryFestivals = findViewById(R.id.categoryFestivals);
@@ -69,26 +94,6 @@ public class MainActivity extends AppCompatActivity {
         setupBannerCarousel();
 
         categoryAll.setSelected(true);
-
-        profile.setOnClickListener(v -> {
-
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    Profile.class
-            );
-
-            startActivity(intent);
-        });
-
-        settings.setOnClickListener(v -> {
-
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    SettingsActivity.class
-            );
-
-            startActivity(intent);
-        });
 
         categoryAll.setOnClickListener(v ->
                 selectCategory("All")
@@ -116,9 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         etSearchEvents.setOnEditorActionListener(
                 (v, actionId, event) -> {
-
                     loadEvents();
-
                     return false;
                 }
         );
@@ -126,13 +129,65 @@ public class MainActivity extends AppCompatActivity {
         loadEvents();
     }
 
+    private void setupVolunteerButton() {
+
+        if (btnVolunteer == null) {
+            return;
+        }
+
+        FirebaseUser currentUser =
+                mAuth.getCurrentUser();
+
+        if (currentUser != null) {
+
+            String email =
+                    currentUser.getEmail();
+
+            if (email != null &&
+                    email.equalsIgnoreCase(
+                            VOLUNTEER_EMAIL
+                    )) {
+
+                btnVolunteer.setVisibility(
+                        View.VISIBLE
+                );
+
+                btnVolunteer.setOnClickListener(v -> {
+
+                    Intent intent =
+                            new Intent(
+                                    MainActivity.this,
+                                    VolunteerActivity.class
+                            );
+
+                    startActivity(intent);
+                });
+
+            } else {
+
+                btnVolunteer.setVisibility(
+                        View.GONE
+                );
+            }
+
+        } else {
+
+            btnVolunteer.setVisibility(
+                    View.GONE
+            );
+        }
+    }
+
     @Override
     protected void onResume() {
-
         super.onResume();
 
         if (db != null) {
             loadEvents();
+        }
+
+        if (mAuth != null) {
+            setupVolunteerButton();
         }
     }
 
@@ -149,8 +204,9 @@ public class MainActivity extends AppCompatActivity {
                 new ViewPager2.OnPageChangeCallback() {
 
                     @Override
-                    public void onPageSelected(int position) {
-
+                    public void onPageSelected(
+                            int position
+                    ) {
                         updateDots(position);
                     }
                 }
@@ -171,11 +227,20 @@ public class MainActivity extends AppCompatActivity {
 
             dot.setTextColor(
                     i == 0
-                            ? getColor(android.R.color.black)
-                            : getColor(android.R.color.darker_gray)
+                            ? getColor(
+                            android.R.color.black
+                    )
+                            : getColor(
+                            android.R.color.darker_gray
+                    )
             );
 
-            dot.setPadding(5, 0, 5, 0);
+            dot.setPadding(
+                    5,
+                    0,
+                    5,
+                    0
+            );
 
             bannerDots.addView(dot);
         }
@@ -192,8 +257,12 @@ public class MainActivity extends AppCompatActivity {
 
             dot.setTextColor(
                     i == position
-                            ? getColor(android.R.color.black)
-                            : getColor(android.R.color.darker_gray)
+                            ? getColor(
+                            android.R.color.black
+                    )
+                            : getColor(
+                            android.R.color.darker_gray
+                    )
             );
         }
     }
@@ -221,30 +290,42 @@ public class MainActivity extends AppCompatActivity {
                                 document.getId();
 
                         String eventName =
-                                document.getString("eventName");
+                                document.getString(
+                                        "eventName"
+                                );
 
                         String eventDate =
-                                document.getString("eventDate");
+                                document.getString(
+                                        "eventDate"
+                                );
 
                         String eventTime =
-                                document.getString("eventTime");
+                                document.getString(
+                                        "eventTime"
+                                );
 
                         String eventLocation =
-                                document.getString("eventLocation");
+                                document.getString(
+                                        "eventLocation"
+                                );
 
                         String category =
-                                document.getString("category");
+                                document.getString(
+                                        "category"
+                                );
 
                         if (eventName == null) {
                             eventName = "Event";
                         }
 
                         if (eventDate == null) {
-                            eventDate = "Date not available";
+                            eventDate =
+                                    "Date not available";
                         }
 
                         if (eventTime == null) {
-                            eventTime = "Time not available";
+                            eventTime =
+                                    "Time not available";
                         }
 
                         if (eventLocation == null) {
@@ -258,22 +339,34 @@ public class MainActivity extends AppCompatActivity {
 
                         boolean categoryMatches =
                                 selectedCategory.equals("All")
-                                        || category.equalsIgnoreCase(
-                                        selectedCategory
-                                );
+                                        ||
+                                        category.equalsIgnoreCase(
+                                                selectedCategory
+                                        );
 
                         boolean searchMatches =
                                 searchText.isEmpty()
-                                        || eventName.toLowerCase()
-                                        .contains(searchText)
-                                        || eventLocation.toLowerCase()
-                                        .contains(searchText)
-                                        || category.toLowerCase()
-                                        .contains(searchText);
+                                        ||
+                                        eventName
+                                                .toLowerCase()
+                                                .contains(
+                                                        searchText
+                                                )
+                                        ||
+                                        eventLocation
+                                                .toLowerCase()
+                                                .contains(
+                                                        searchText
+                                                )
+                                        ||
+                                        category
+                                                .toLowerCase()
+                                                .contains(
+                                                        searchText
+                                                );
 
                         if (!categoryMatches ||
                                 !searchMatches) {
-
                             continue;
                         }
 
@@ -389,8 +482,11 @@ public class MainActivity extends AppCompatActivity {
 
         dateBox.setLayoutParams(dateParams);
 
-        String day = getDay(eventDate);
-        String month = getMonth(eventDate);
+        String day =
+                getDay(eventDate);
+
+        String month =
+                getMonth(eventDate);
 
         TextView tvDay =
                 new TextView(this);
@@ -398,7 +494,9 @@ public class MainActivity extends AppCompatActivity {
         tvDay.setText(day);
 
         tvDay.setTextColor(
-                getColor(android.R.color.holo_orange_dark)
+                getColor(
+                        android.R.color.holo_orange_dark
+                )
         );
 
         tvDay.setTextSize(25);
@@ -418,7 +516,9 @@ public class MainActivity extends AppCompatActivity {
         tvMonth.setText(month);
 
         tvMonth.setTextColor(
-                getColor(android.R.color.darker_gray)
+                getColor(
+                        android.R.color.darker_gray
+                )
         );
 
         tvMonth.setTextSize(11);
@@ -464,7 +564,9 @@ public class MainActivity extends AppCompatActivity {
         tvName.setText(eventName);
 
         tvName.setTextColor(
-                getColor(android.R.color.black)
+                getColor(
+                        android.R.color.black
+                )
         );
 
         tvName.setTextSize(16);
@@ -484,7 +586,9 @@ public class MainActivity extends AppCompatActivity {
         );
 
         tvDetails.setTextColor(
-                getColor(android.R.color.darker_gray)
+                getColor(
+                        android.R.color.darker_gray
+                )
         );
 
         tvDetails.setTextSize(12);
@@ -497,7 +601,9 @@ public class MainActivity extends AppCompatActivity {
         );
 
         tvLocation.setTextColor(
-                getColor(android.R.color.darker_gray)
+                getColor(
+                        android.R.color.darker_gray
+                )
         );
 
         tvLocation.setTextSize(11);
@@ -536,7 +642,9 @@ public class MainActivity extends AppCompatActivity {
         arrow.setText("›");
 
         arrow.setTextColor(
-                getColor(android.R.color.holo_orange_dark)
+                getColor(
+                        android.R.color.holo_orange_dark
+                )
         );
 
         arrow.setTextSize(28);
@@ -617,7 +725,9 @@ public class MainActivity extends AppCompatActivity {
         return "---";
     }
 
-    private void selectCategory(String category) {
+    private void selectCategory(
+            String category
+    ) {
 
         selectedCategory = category;
 
@@ -665,7 +775,9 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this);
 
-        builder.setTitle("Filter Events");
+        builder.setTitle(
+                "Filter Events"
+        );
 
         builder.setSingleChoiceItems(
                 filters,
@@ -674,7 +786,8 @@ public class MainActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             MainActivity.this,
-                            filters[which] + " selected",
+                            filters[which] +
+                                    " selected",
                             Toast.LENGTH_SHORT
                     ).show();
 
