@@ -13,6 +13,7 @@ public class AdminActivity extends AppCompatActivity {
     private View btnManageVolunteers;
     private View btnCollegeList;
     private View btnNotifications;
+    private View btnAdminSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +25,7 @@ public class AdminActivity extends AppCompatActivity {
         btnManageVolunteers = findViewById(R.id.btnManageVolunteers);
         btnCollegeList = findViewById(R.id.btnCollegeList);
         btnNotifications = findViewById(R.id.btnNotifications);
+        btnAdminSettings = findViewById(R.id.btnAdminSettings);
 
         btnManageEvents.setOnClickListener(v ->
                 startActivity(new Intent(
@@ -57,6 +59,13 @@ public class AdminActivity extends AppCompatActivity {
                 startActivity(new Intent(
                         AdminActivity.this,
                         NotificationActivity.class
+                ))
+        );
+
+        btnAdminSettings.setOnClickListener(v ->
+                startActivity(new Intent(
+                        AdminActivity.this,
+                        SettingsActivity.class
                 ))
         );
     }

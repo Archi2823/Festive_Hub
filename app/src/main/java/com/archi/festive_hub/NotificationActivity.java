@@ -12,20 +12,29 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class NotificationActivity extends AppCompatActivity {
 
+    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+
     private LinearLayout notificationContainer;
     private TextView tvNoNotifications;
+
+    private static final String ADMIN_EMAIL =
+            "upadhyaysisters53@gmail.com";
+
+    private boolean isAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
 
+        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
         notificationContainer =
@@ -34,14 +43,35 @@ public class NotificationActivity extends AppCompatActivity {
         tvNoNotifications =
                 findViewById(R.id.tvNoNotifications);
 
+        isAdmin = checkAdminAccess();
+
         Button btnAddNotification =
                 findViewById(R.id.btnAddNotification);
 
-        btnAddNotification.setOnClickListener(
-                v -> showNotificationDialog()
-        );
+        if (isAdmin) {
+            btnAddNotification.setVisibility(View.VISIBLE);
+
+            btnAddNotification.setOnClickListener(
+                    v -> showNotificationDialog()
+            );
+        } else {
+            btnAddNotification.setVisibility(View.GONE);
+        }
 
         loadNotifications();
+    }
+
+    private boolean checkAdminAccess() {
+
+        if (mAuth.getCurrentUser() == null) {
+            return false;
+        }
+
+        String email =
+                mAuth.getCurrentUser().getEmail();
+
+        return email != null
+                && email.equalsIgnoreCase(ADMIN_EMAIL);
     }
 
     private void loadNotifications() {
@@ -53,9 +83,11 @@ public class NotificationActivity extends AppCompatActivity {
                     notificationContainer.removeAllViews();
 
                     if (snapshot.isEmpty()) {
+
                         tvNoNotifications.setVisibility(
                                 View.VISIBLE
                         );
+
                         return;
                     }
 
@@ -66,7 +98,8 @@ public class NotificationActivity extends AppCompatActivity {
                     for (QueryDocumentSnapshot document :
                             snapshot) {
 
-                        String id = document.getId();
+                        String id =
+                                document.getId();
 
                         String title =
                                 document.getString("title");
@@ -103,42 +136,73 @@ public class NotificationActivity extends AppCompatActivity {
         );
 
         TextView tvTitle =
-                view.findViewById(R.id.tvNotificationTitle);
+                view.findViewById(
+                        R.id.tvNotificationTitle
+                );
 
         TextView tvMessage =
-                view.findViewById(R.id.tvNotificationMessage);
+                view.findViewById(
+                        R.id.tvNotificationMessage
+                );
 
         Button btnEdit =
-                view.findViewById(R.id.btnEditNotification);
+                view.findViewById(
+                        R.id.btnEditNotification
+                );
 
         Button btnDelete =
-                view.findViewById(R.id.btnDeleteNotification);
+                view.findViewById(
+                        R.id.btnDeleteNotification
+                );
 
         tvTitle.setText(
-                title != null ? title : "Notification"
+                title != null
+                        ? title
+                        : "Notification"
         );
 
         tvMessage.setText(
-                message != null ? message : ""
+                message != null
+                        ? message
+                        : ""
         );
 
-        btnEdit.setOnClickListener(v ->
-                showNotificationDialog(
-                        id,
-                        title,
-                        message
-                )
-        );
+        if (isAdmin) {
 
-        btnDelete.setOnClickListener(v ->
-                confirmDelete(id, title)
-        );
+            btnEdit.setVisibility(View.VISIBLE);
+            btnDelete.setVisibility(View.VISIBLE);
+
+            btnEdit.setOnClickListener(v ->
+                    showNotificationDialog(
+                            id,
+                            title,
+                            message
+                    )
+            );
+
+            btnDelete.setOnClickListener(v ->
+                    confirmDelete(
+                            id,
+                            title
+                    )
+            );
+
+        } else {
+
+            btnEdit.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+        }
 
         notificationContainer.addView(view);
     }
 
     private void showNotificationDialog() {
-        showNotificationDialog(null, "", "");
+
+        showNotificationDialog(
+                null,
+                "",
+                ""
+        );
     }
 
     private void showNotificationDialog(
@@ -147,33 +211,54 @@ public class NotificationActivity extends AppCompatActivity {
             String oldMessage
     ) {
 
-        View dialogView = LayoutInflater.from(this).inflate(
-                R.layout.dialog_add_notification,
-                null
-        );
+        if (!isAdmin) {
+            Toast.makeText(
+                    this,
+                    "Admin access required",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        View dialogView =
+                LayoutInflater.from(this).inflate(
+                        R.layout.dialog_add_notification,
+                        null
+                );
 
         EditText etTitle =
-                dialogView.findViewById(R.id.etNotificationTitle);
+                dialogView.findViewById(
+                        R.id.etNotificationTitle
+                );
 
         EditText etMessage =
-                dialogView.findViewById(R.id.etNotificationMessage);
+                dialogView.findViewById(
+                        R.id.etNotificationMessage
+                );
 
         etTitle.setText(oldTitle);
         etMessage.setText(oldMessage);
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(
-                        id == null
-                                ? "Add Notification"
-                                : "Edit Notification"
-                )
-                .setView(dialogView)
-                .setPositiveButton(
-                        id == null ? "Send" : "Save",
-                        null
-                )
-                .setNegativeButton("Cancel", null)
-                .create();
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                id == null
+                                        ? "Add Notification"
+                                        : "Edit Notification"
+                        )
+                        .setView(dialogView)
+                        .setPositiveButton(
+                                id == null
+                                        ? "Send"
+                                        : "Save",
+                                null
+                        )
+                        .setNegativeButton(
+                                "Cancel",
+                                null
+                        )
+                        .create();
 
         dialog.setOnShowListener(d ->
                 dialog.getButton(
@@ -191,16 +276,20 @@ public class NotificationActivity extends AppCompatActivity {
                                     .trim();
 
                     if (title.isEmpty()) {
+
                         etTitle.setError(
                                 "Enter notification title"
                         );
+
                         return;
                     }
 
                     if (message.isEmpty()) {
+
                         etMessage.setError(
                                 "Enter notification message"
                         );
+
                         return;
                     }
 
@@ -223,31 +312,54 @@ public class NotificationActivity extends AppCompatActivity {
             AlertDialog dialog
     ) {
 
+        if (!isAdmin) {
+
+            Toast.makeText(
+                    this,
+                    "Admin access required",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         java.util.HashMap<String, Object> data =
                 new java.util.HashMap<>();
 
-        data.put("title", title);
-        data.put("message", message);
+        data.put(
+                "title",
+                title
+        );
+
+        data.put(
+                "message",
+                message
+        );
+
         data.put(
                 "timestamp",
-                com.google.firebase.firestore.FieldValue.serverTimestamp()
+                com.google.firebase.firestore.FieldValue
+                        .serverTimestamp()
         );
 
         if (id == null) {
 
             db.collection("notifications")
                     .add(data)
-                    .addOnSuccessListener(documentReference -> {
+                    .addOnSuccessListener(
+                            documentReference -> {
 
-                        Toast.makeText(
-                                this,
-                                "Notification added",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                                Toast.makeText(
+                                        this,
+                                        "Notification added",
+                                        Toast.LENGTH_SHORT
+                                ).show();
 
-                        dialog.dismiss();
-                        loadNotifications();
-                    })
+                                dialog.dismiss();
+
+                                loadNotifications();
+                            }
+                    )
                     .addOnFailureListener(e ->
                             Toast.makeText(
                                     this,
@@ -261,17 +373,20 @@ public class NotificationActivity extends AppCompatActivity {
             db.collection("notifications")
                     .document(id)
                     .update(data)
-                    .addOnSuccessListener(unused -> {
+                    .addOnSuccessListener(
+                            unused -> {
 
-                        Toast.makeText(
-                                this,
-                                "Notification updated",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                                Toast.makeText(
+                                        this,
+                                        "Notification updated",
+                                        Toast.LENGTH_SHORT
+                                ).show();
 
-                        dialog.dismiss();
-                        loadNotifications();
-                    })
+                                dialog.dismiss();
+
+                                loadNotifications();
+                            }
+                    )
                     .addOnFailureListener(e ->
                             Toast.makeText(
                                     this,
@@ -287,13 +402,28 @@ public class NotificationActivity extends AppCompatActivity {
             String title
     ) {
 
+        if (!isAdmin) {
+
+            Toast.makeText(
+                    this,
+                    "Admin access required",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         new AlertDialog.Builder(this)
-                .setTitle("Delete Notification")
+                .setTitle(
+                        "Delete Notification"
+                )
                 .setMessage(
                         "Delete \"" +
-                                (title != null
-                                        ? title
-                                        : "this notification") +
+                                (
+                                        title != null
+                                                ? title
+                                                : "this notification"
+                                ) +
                                 "\"?"
                 )
                 .setPositiveButton(
@@ -308,7 +438,20 @@ public class NotificationActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void deleteNotification(String id) {
+    private void deleteNotification(
+            String id
+    ) {
+
+        if (!isAdmin) {
+
+            Toast.makeText(
+                    this,
+                    "Admin access required",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
 
         db.collection("notifications")
                 .document(id)

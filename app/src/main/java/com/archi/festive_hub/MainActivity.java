@@ -42,12 +42,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
         ImageButton profile = findViewById(R.id.btnProfile);
+        ImageButton settings = findViewById(R.id.btnSettings);
 
         categoryAll = findViewById(R.id.categoryAll);
         categoryFestivals = findViewById(R.id.categoryFestivals);
@@ -69,10 +71,22 @@ public class MainActivity extends AppCompatActivity {
         categoryAll.setSelected(true);
 
         profile.setOnClickListener(v -> {
+
             Intent intent = new Intent(
                     MainActivity.this,
                     Profile.class
             );
+
+            startActivity(intent);
+        });
+
+        settings.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    SettingsActivity.class
+            );
+
             startActivity(intent);
         });
 
@@ -102,7 +116,9 @@ public class MainActivity extends AppCompatActivity {
 
         etSearchEvents.setOnEditorActionListener(
                 (v, actionId, event) -> {
+
                     loadEvents();
+
                     return false;
                 }
         );
@@ -112,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         if (db != null) {
@@ -133,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onPageSelected(int position) {
+
                         updateDots(position);
                     }
                 }
@@ -145,10 +163,12 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < count; i++) {
 
-            TextView dot = new TextView(this);
+            TextView dot =
+                    new TextView(this);
 
             dot.setText("●");
             dot.setTextSize(10);
+
             dot.setTextColor(
                     i == 0
                             ? getColor(android.R.color.black)
@@ -253,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (!categoryMatches ||
                                 !searchMatches) {
+
                             continue;
                         }
 
@@ -269,10 +290,13 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (eventCount == 0) {
+
                         tvNoEvents.setVisibility(
                                 View.VISIBLE
                         );
+
                     } else {
+
                         tvNoEvents.setVisibility(
                                 View.GONE
                         );
@@ -372,13 +396,17 @@ public class MainActivity extends AppCompatActivity {
                 new TextView(this);
 
         tvDay.setText(day);
+
         tvDay.setTextColor(
                 getColor(android.R.color.holo_orange_dark)
         );
+
         tvDay.setTextSize(25);
+
         tvDay.setGravity(
                 android.view.Gravity.CENTER
         );
+
         tvDay.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -388,13 +416,17 @@ public class MainActivity extends AppCompatActivity {
                 new TextView(this);
 
         tvMonth.setText(month);
+
         tvMonth.setTextColor(
                 getColor(android.R.color.darker_gray)
         );
+
         tvMonth.setTextSize(11);
+
         tvMonth.setGravity(
                 android.view.Gravity.CENTER
         );
+
         tvMonth.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -430,10 +462,13 @@ public class MainActivity extends AppCompatActivity {
                 new TextView(this);
 
         tvName.setText(eventName);
+
         tvName.setTextColor(
                 getColor(android.R.color.black)
         );
+
         tvName.setTextSize(16);
+
         tvName.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -451,6 +486,7 @@ public class MainActivity extends AppCompatActivity {
         tvDetails.setTextColor(
                 getColor(android.R.color.darker_gray)
         );
+
         tvDetails.setTextSize(12);
 
         TextView tvLocation =
@@ -498,9 +534,11 @@ public class MainActivity extends AppCompatActivity {
                 new TextView(this);
 
         arrow.setText("›");
+
         arrow.setTextColor(
                 getColor(android.R.color.holo_orange_dark)
         );
+
         arrow.setTextSize(28);
 
         card.addView(dateBox);
@@ -529,6 +567,7 @@ public class MainActivity extends AppCompatActivity {
     private String getDay(String date) {
 
         try {
+
             String[] parts =
                     date.trim().split(" ");
 
@@ -545,6 +584,7 @@ public class MainActivity extends AppCompatActivity {
                     return first;
                 }
             }
+
         } catch (Exception ignored) {
         }
 

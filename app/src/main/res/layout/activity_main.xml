@@ -374,6 +374,18 @@
             android:textSize="15sp"
             android:visibility="gone" />
 
+        <TextView
+            android:id="@+id/btnSettings"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_circle_light"
+            android:clickable="true"
+            android:contentDescription="Settings"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="⚙"
+            android:textColor="#F26B21"
+            android:textSize="24sp" />
         <LinearLayout
             android:id="@+id/eventsContainer"
             android:layout_width="match_parent"

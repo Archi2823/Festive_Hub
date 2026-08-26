@@ -14,7 +14,7 @@ public class VolunteerActivity extends AppCompatActivity {
     private Button btnScanQr;
     private Button btnMyEvents;
     private Button btnVolunteerProfile;
-    private Button btnVolunteerLogout;
+    private Button btnVolunteerSettings;
 
     private FirebaseAuth mAuth;
 
@@ -42,7 +42,7 @@ public class VolunteerActivity extends AppCompatActivity {
         btnScanQr = findViewById(R.id.btnScanQr);
         btnMyEvents = findViewById(R.id.btnMyEvents);
         btnVolunteerProfile = findViewById(R.id.btnVolunteerProfile);
-        btnVolunteerLogout = findViewById(R.id.btnVolunteerLogout);
+        btnVolunteerSettings = findViewById(R.id.btnVolunteerSettings);
 
         btnScanQr.setOnClickListener(v -> {
             Intent intent = new Intent(
@@ -57,7 +57,6 @@ public class VolunteerActivity extends AppCompatActivity {
                     VolunteerActivity.this,
                     VolunteerEventsActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -69,16 +68,12 @@ public class VolunteerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        btnVolunteerLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-
-            Toast.makeText(
+        btnVolunteerSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(
                     VolunteerActivity.this,
-                    "Logged out successfully",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            finish();
+                    SettingsActivity.class
+            );
+            startActivity(intent);
         });
     }
 
