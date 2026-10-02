@@ -85,6 +85,21 @@
             android:hint="Event Description"
             android:inputType="textMultiLine" />
 
+        <TextView
+            android:id="@+id/tvAssignVolunteer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Assign Volunteer"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerVolunteer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" />
+
     </LinearLayout>
 
 </ScrollView>

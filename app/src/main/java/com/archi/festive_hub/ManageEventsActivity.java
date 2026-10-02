@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,12 +17,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ManageEventsActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private LinearLayout eventsContainer;
     private TextView tvNoEvents;
     private Button btnAddEvent;
+
+    private final List<String> volunteerEmails = new ArrayList<>();
+    private final List<String> volunteerNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +60,54 @@ public class ManageEventsActivity extends AppCompatActivity {
                         null
                 )
         );
+
+        loadVolunteers();
         loadEvents();
+    }
+
+    private void loadVolunteers() {
+        db.collection("volunteers")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+
+                    volunteerEmails.clear();
+                    volunteerNames.clear();
+
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+
+                        String email = document.getString("email");
+
+                        if (email == null) {
+                            email = document.getString("volunteerEmail");
+                        }
+
+                        String name = document.getString("name");
+
+                        if (name == null) {
+                            name = document.getString("volunteerName");
+                        }
+
+                        if (name == null) {
+                            name = email;
+                        }
+
+                        if (email != null && !email.trim().isEmpty()) {
+                            volunteerEmails.add(email);
+                            volunteerNames.add(
+                                    name != null && !name.trim().isEmpty()
+                                            ? name
+                                            : email
+                            );
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Unable to load volunteers",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 
     private void loadEvents() {
@@ -83,17 +140,42 @@ public class ManageEventsActivity extends AppCompatActivity {
                         String eventDate =
                                 document.getString("date");
 
+                        if (eventDate == null) {
+                            eventDate =
+                                    document.getString("eventDate");
+                        }
+
                         String eventTime =
                                 document.getString("time");
+
+                        if (eventTime == null) {
+                            eventTime =
+                                    document.getString("eventTime");
+                        }
 
                         String eventLocation =
                                 document.getString("location");
 
+                        if (eventLocation == null) {
+                            eventLocation =
+                                    document.getString("eventLocation");
+                        }
+
                         String eventCategory =
                                 document.getString("category");
 
+                        if (eventCategory == null) {
+                            eventCategory =
+                                    document.getString("eventCategory");
+                        }
+
                         String eventDescription =
                                 document.getString("description");
+
+                        String assignedVolunteerEmail =
+                                document.getString(
+                                        "assignedVolunteerEmail"
+                                );
 
                         addEventCard(
                                 eventId,
@@ -102,7 +184,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                                 eventTime,
                                 eventLocation,
                                 eventCategory,
-                                eventDescription
+                                eventDescription,
+                                assignedVolunteerEmail
                         );
                     }
                 })
@@ -122,7 +205,8 @@ public class ManageEventsActivity extends AppCompatActivity {
             String eventTime,
             String eventLocation,
             String eventCategory,
-            String eventDescription
+            String eventDescription,
+            String assignedVolunteerEmail
     ) {
 
         View eventView =
@@ -163,6 +247,12 @@ public class ManageEventsActivity extends AppCompatActivity {
                         : "Event"
         );
 
+        String volunteerText =
+                assignedVolunteerEmail != null
+                        && !assignedVolunteerEmail.trim().isEmpty()
+                        ? assignedVolunteerEmail
+                        : "Not assigned";
+
         String details =
                 "Date: " +
                         (eventDate != null
@@ -179,7 +269,9 @@ public class ManageEventsActivity extends AppCompatActivity {
                         + "\nCategory: " +
                         (eventCategory != null
                                 ? eventCategory
-                                : "N/A");
+                                : "N/A")
+                        + "\nVolunteer: " +
+                        volunteerText;
 
         tvEventDetails.setText(details);
 
@@ -191,7 +283,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                         eventTime,
                         eventLocation,
                         eventCategory,
-                        eventDescription
+                        eventDescription,
+                        assignedVolunteerEmail
                 )
         );
 
@@ -235,6 +328,28 @@ public class ManageEventsActivity extends AppCompatActivity {
             String eventCategory,
             String eventDescription
     ) {
+        showEventDialog(
+                eventId,
+                eventName,
+                eventDate,
+                eventTime,
+                eventLocation,
+                eventCategory,
+                eventDescription,
+                null
+        );
+    }
+
+    private void showEventDialog(
+            String eventId,
+            String eventName,
+            String eventDate,
+            String eventTime,
+            String eventLocation,
+            String eventCategory,
+            String eventDescription,
+            String assignedVolunteerEmail
+    ) {
 
         View dialogView =
                 LayoutInflater.from(this).inflate(
@@ -272,6 +387,11 @@ public class ManageEventsActivity extends AppCompatActivity {
                         R.id.etEventDescription
                 );
 
+        Spinner spinnerVolunteer =
+                dialogView.findViewById(
+                        R.id.spinnerVolunteer
+                );
+
         if (eventId != null) {
 
             etEventName.setText(
@@ -299,6 +419,33 @@ public class ManageEventsActivity extends AppCompatActivity {
                             ? eventDescription
                             : ""
             );
+        }
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        getVolunteerDisplayList()
+                );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        spinnerVolunteer.setAdapter(adapter);
+
+        if (assignedVolunteerEmail != null) {
+
+            int selectedPosition =
+                    volunteerEmails.indexOf(
+                            assignedVolunteerEmail
+                    );
+
+            if (selectedPosition >= 0) {
+                spinnerVolunteer.setSelection(
+                        selectedPosition
+                );
+            }
         }
 
         AlertDialog dialog =
@@ -375,6 +522,26 @@ public class ManageEventsActivity extends AppCompatActivity {
                                     return;
                                 }
 
+                                String selectedVolunteerEmail =
+                                        null;
+
+                                if (!volunteerEmails.isEmpty()) {
+
+                                    int selectedPosition =
+                                            spinnerVolunteer
+                                                    .getSelectedItemPosition();
+
+                                    if (selectedPosition >= 0
+                                            && selectedPosition
+                                            < volunteerEmails.size()) {
+
+                                        selectedVolunteerEmail =
+                                                volunteerEmails.get(
+                                                        selectedPosition
+                                                );
+                                    }
+                                }
+
                                 saveEvent(
                                         dialog,
                                         eventId,
@@ -383,7 +550,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                                         time,
                                         location,
                                         category,
-                                        description
+                                        description,
+                                        selectedVolunteerEmail
                                 );
                             }
                     );
@@ -391,6 +559,45 @@ public class ManageEventsActivity extends AppCompatActivity {
         );
 
         dialog.show();
+    }
+
+    private List<String> getVolunteerDisplayList() {
+
+        List<String> displayList =
+                new ArrayList<>();
+
+        if (volunteerEmails.isEmpty()) {
+            displayList.add(
+                    "No volunteers available"
+            );
+            return displayList;
+        }
+
+        for (int i = 0;
+             i < volunteerEmails.size();
+             i++) {
+
+            String name =
+                    i < volunteerNames.size()
+                            ? volunteerNames.get(i)
+                            : volunteerEmails.get(i);
+
+            String email =
+                    volunteerEmails.get(i);
+
+            if (name != null
+                    && !name.equals(email)) {
+
+                displayList.add(
+                        name + " (" + email + ")"
+                );
+
+            } else {
+                displayList.add(email);
+            }
+        }
+
+        return displayList;
     }
 
     private void saveEvent(
@@ -401,22 +608,78 @@ public class ManageEventsActivity extends AppCompatActivity {
             String time,
             String location,
             String category,
-            String description
+            String description,
+            String assignedVolunteerEmail
     ) {
 
-        java.util.HashMap<String, Object> event =
-                new java.util.HashMap<>();
+        Map<String, Object> event =
+                new HashMap<>();
 
-        event.put("name", name);
-        event.put("eventName", name);
-        event.put("date", date);
-        event.put("eventDate", date);
-        event.put("time", time);
-        event.put("eventTime", time);
-        event.put("location", location);
-        event.put("eventLocation", location);
-        event.put("category", category);
-        event.put("description", description);
+        event.put(
+                "name",
+                name
+        );
+
+        event.put(
+                "eventName",
+                name
+        );
+
+        event.put(
+                "date",
+                date
+        );
+
+        event.put(
+                "eventDate",
+                date
+        );
+
+        event.put(
+                "time",
+                time
+        );
+
+        event.put(
+                "eventTime",
+                time
+        );
+
+        event.put(
+                "location",
+                location
+        );
+
+        event.put(
+                "eventLocation",
+                location
+        );
+
+        event.put(
+                "category",
+                category
+        );
+
+        event.put(
+                "description",
+                description
+        );
+
+        if (assignedVolunteerEmail != null
+                && !assignedVolunteerEmail.trim().isEmpty()) {
+
+            event.put(
+                    "assignedVolunteerEmail",
+                    assignedVolunteerEmail
+            );
+
+        } else {
+
+            event.put(
+                    "assignedVolunteerEmail",
+                    ""
+            );
+        }
 
         if (eventId == null) {
 
