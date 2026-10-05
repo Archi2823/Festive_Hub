@@ -1,8 +1,10 @@
 package com.archi.festive_hub;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -78,6 +80,10 @@ public class VolunteerEventsActivity extends AppCompatActivity {
                                 View.VISIBLE
                         );
 
+                        tvNoEvents.setText(
+                                "No assigned events"
+                        );
+
                         return;
                     }
 
@@ -91,24 +97,53 @@ public class VolunteerEventsActivity extends AppCompatActivity {
                         String eventName =
                                 document.getString("eventName");
 
+                        if (eventName == null) {
+                            eventName =
+                                    document.getString("name");
+                        }
+
                         String eventDate =
                                 document.getString("eventDate");
+
+                        if (eventDate == null) {
+                            eventDate =
+                                    document.getString("date");
+                        }
 
                         String eventTime =
                                 document.getString("eventTime");
 
+                        if (eventTime == null) {
+                            eventTime =
+                                    document.getString("time");
+                        }
+
                         String eventLocation =
                                 document.getString("eventLocation");
 
+                        if (eventLocation == null) {
+                            eventLocation =
+                                    document.getString("location");
+                        }
+
                         String eventCategory =
                                 document.getString("eventCategory");
+
+                        if (eventCategory == null) {
+                            eventCategory =
+                                    document.getString("category");
+                        }
+
+                        String eventDescription =
+                                document.getString("description");
 
                         addEventCard(
                                 eventName,
                                 eventDate,
                                 eventTime,
                                 eventLocation,
-                                eventCategory
+                                eventCategory,
+                                eventDescription
                         );
                     }
                 })
@@ -135,7 +170,8 @@ public class VolunteerEventsActivity extends AppCompatActivity {
             String eventDate,
             String eventTime,
             String eventLocation,
-            String eventCategory
+            String eventCategory,
+            String eventDescription
     ) {
 
         View eventView =
@@ -153,6 +189,11 @@ public class VolunteerEventsActivity extends AppCompatActivity {
         TextView tvEventDetails =
                 eventView.findViewById(
                         R.id.tvVolunteerEventDetails
+                );
+
+        Button btnViewEventDetails =
+                eventView.findViewById(
+                        R.id.btnViewEventDetails
                 );
 
         tvEventName.setText(
@@ -180,6 +221,47 @@ public class VolunteerEventsActivity extends AppCompatActivity {
                                 : "N/A");
 
         tvEventDetails.setText(details);
+
+        btnViewEventDetails.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            VolunteerEventsActivity.this,
+                            EventDetailsActivity.class
+                    );
+
+            intent.putExtra(
+                    "eventName",
+                    eventName
+            );
+
+            intent.putExtra(
+                    "eventDate",
+                    eventDate
+            );
+
+            intent.putExtra(
+                    "eventTime",
+                    eventTime
+            );
+
+            intent.putExtra(
+                    "eventLocation",
+                    eventLocation
+            );
+
+            intent.putExtra(
+                    "eventCategory",
+                    eventCategory
+            );
+
+            intent.putExtra(
+                    "eventDescription",
+                    eventDescription
+            );
+
+            startActivity(intent);
+        });
 
         eventsContainer.addView(eventView);
     }

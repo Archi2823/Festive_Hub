@@ -93,6 +93,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".EventDetailsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".Splash_screen"
             android:exported="true">
 
