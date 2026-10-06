@@ -12,8 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 public class EventQrActivity extends AppCompatActivity {
@@ -42,10 +42,14 @@ public class EventQrActivity extends AppCompatActivity {
                 FirebaseFirestore.getInstance();
 
         ImageButton btnBack =
-                findViewById(R.id.btnBackQr);
+                findViewById(
+                        R.id.btnBackQr
+                );
 
         qrCode =
-                findViewById(R.id.qrCode);
+                findViewById(
+                        R.id.qrCode
+                );
 
         txtEventName =
                 findViewById(
@@ -83,8 +87,8 @@ public class EventQrActivity extends AppCompatActivity {
             return;
         }
 
-        if (registrationId == null ||
-                registrationId.trim().isEmpty()) {
+        if (registrationId == null
+                || registrationId.trim().isEmpty()) {
 
             Toast.makeText(
                     this,
@@ -115,16 +119,15 @@ public class EventQrActivity extends AppCompatActivity {
                             }
 
                             String userId =
-                                    documentSnapshot
-                                            .getString(
-                                                    "userId"
-                                            );
+                                    documentSnapshot.getString(
+                                            "userId"
+                                    );
 
-                            if (userId == null ||
-                                    !userId.equals(
-                                            mAuth.getCurrentUser()
-                                                    .getUid()
-                                    )) {
+                            if (userId == null
+                                    || !userId.equals(
+                                    mAuth.getCurrentUser()
+                                            .getUid()
+                            )) {
 
                                 Toast.makeText(
                                         EventQrActivity.this,
@@ -137,25 +140,14 @@ public class EventQrActivity extends AppCompatActivity {
                             }
 
                             String eventName =
-                                    documentSnapshot
-                                            .getString(
-                                                    "eventName"
-                                            );
+                                    documentSnapshot.getString(
+                                            "eventName"
+                                    );
 
-                            String eventId =
-                                    documentSnapshot
-                                            .getString(
-                                                    "eventId"
-                                            );
+                            if (eventName == null
+                                    || eventName.trim().isEmpty()) {
 
-                            if (eventName == null) {
-                                eventName =
-                                        "Event";
-                            }
-
-                            if (eventId == null) {
-                                eventId =
-                                        "";
+                                eventName = "Event";
                             }
 
                             txtEventName.setText(
@@ -163,12 +155,11 @@ public class EventQrActivity extends AppCompatActivity {
                             );
 
                             txtRegistrationInfo.setText(
-                                    "Show this QR code to the volunteer at the event"
+                                    "Show this unique QR code to the volunteer at the event"
                             );
 
                             generateQrCode(
-                                    registrationId,
-                                    eventId
+                                    registrationId
                             );
                         }
                 )
@@ -182,15 +173,11 @@ public class EventQrActivity extends AppCompatActivity {
     }
 
     private void generateQrCode(
-            String registrationId,
-            String eventId
+            String registrationId
     ) {
 
         String qrData =
-                "FESTIVE_HUB|"
-                        + "EVENT_ID="
-                        + eventId
-                        + "|REGISTRATION_ID="
+                "FESTIVE_HUB|REGISTRATION|"
                         + registrationId;
 
         QRCodeWriter writer =
@@ -231,7 +218,9 @@ public class EventQrActivity extends AppCompatActivity {
                 }
             }
 
-            qrCode.setImageBitmap(bitmap);
+            qrCode.setImageBitmap(
+                    bitmap
+            );
 
         } catch (WriterException e) {
 

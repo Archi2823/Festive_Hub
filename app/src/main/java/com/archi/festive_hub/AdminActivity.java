@@ -13,60 +13,98 @@ public class AdminActivity extends AppCompatActivity {
     private View btnManageVolunteers;
     private View btnCollegeList;
     private View btnNotifications;
-    private View btnAdminSettings;
+    private View btnAttendance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin);
 
-        btnManageEvents = findViewById(R.id.btnManageEvents);
-        btnManageStudents = findViewById(R.id.btnManageStudents);
-        btnManageVolunteers = findViewById(R.id.btnManageVolunteers);
-        btnCollegeList = findViewById(R.id.btnCollegeList);
-        btnNotifications = findViewById(R.id.btnNotifications);
-        btnAdminSettings = findViewById(R.id.btnAdminSettings);
+        setContentView(
+                R.layout.activity_admin
+        );
+
+        btnManageEvents =
+                findViewById(
+                        R.id.btnManageEvents
+                );
+
+        btnManageStudents =
+                findViewById(
+                        R.id.btnManageStudents
+                );
+
+        btnManageVolunteers =
+                findViewById(
+                        R.id.btnManageVolunteers
+                );
+
+        btnCollegeList =
+                findViewById(
+                        R.id.btnCollegeList
+                );
+
+        btnNotifications =
+                findViewById(
+                        R.id.btnNotifications
+                );
+
+        btnAttendance =
+                findViewById(
+                        R.id.btnAttendance
+                );
 
         btnManageEvents.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        ManageEventsActivity.class
-                ))
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                ManageEventsActivity.class
+                        )
+                )
         );
 
         btnManageStudents.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        ManageStudentsActivity.class
-                ))
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                ManageStudentsActivity.class
+                        )
+                )
         );
 
         btnManageVolunteers.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        ManageVolunteersActivity.class
-                ))
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                ManageVolunteersActivity.class
+                        )
+                )
         );
 
         btnCollegeList.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        CollegeListActivity.class
-                ))
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                CollegeListActivity.class
+                        )
+                )
         );
 
         btnNotifications.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        NotificationActivity.class
-                ))
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                NotificationActivity.class
+                        )
+                )
         );
 
-        btnAdminSettings.setOnClickListener(v ->
-                startActivity(new Intent(
-                        AdminActivity.this,
-                        SettingsActivity.class
-                ))
+        btnAttendance.setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                AdminActivity.this,
+                                AttendanceActivity.class
+                        )
+                )
         );
     }
 }

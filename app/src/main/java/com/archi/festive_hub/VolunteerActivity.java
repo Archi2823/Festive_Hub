@@ -13,6 +13,7 @@ public class VolunteerActivity extends AppCompatActivity {
 
     private Button btnScanQr;
     private Button btnMyEvents;
+    private Button btnAttendance;
     private Button btnVolunteerProfile;
     private Button btnVolunteerSettings;
 
@@ -24,11 +25,15 @@ public class VolunteerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_volunteer);
+
+        setContentView(
+                R.layout.activity_volunteer
+        );
 
         mAuth = FirebaseAuth.getInstance();
 
         if (!isVolunteer()) {
+
             Toast.makeText(
                     this,
                     "Volunteer access only",
@@ -39,40 +44,83 @@ public class VolunteerActivity extends AppCompatActivity {
             return;
         }
 
-        btnScanQr = findViewById(R.id.btnScanQr);
-        btnMyEvents = findViewById(R.id.btnMyEvents);
-        btnVolunteerProfile = findViewById(R.id.btnVolunteerProfile);
-        btnVolunteerSettings = findViewById(R.id.btnVolunteerSettings);
+        btnScanQr =
+                findViewById(
+                        R.id.btnScanQr
+                );
+
+        btnMyEvents =
+                findViewById(
+                        R.id.btnMyEvents
+                );
+
+        btnAttendance =
+                findViewById(
+                        R.id.btnAttendance
+                );
+
+        btnVolunteerProfile =
+                findViewById(
+                        R.id.btnVolunteerProfile
+                );
+
+        btnVolunteerSettings =
+                findViewById(
+                        R.id.btnVolunteerSettings
+                );
 
         btnScanQr.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    VolunteerActivity.this,
-                    VolunteerScanner.class
-            );
+
+            Intent intent =
+                    new Intent(
+                            VolunteerActivity.this,
+                            VolunteerScanner.class
+                    );
+
             startActivity(intent);
         });
 
         btnMyEvents.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    VolunteerActivity.this,
-                    VolunteerEventsActivity.class
-            );
+
+            Intent intent =
+                    new Intent(
+                            VolunteerActivity.this,
+                            VolunteerEventsActivity.class
+                    );
+
+            startActivity(intent);
+        });
+
+        btnAttendance.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            VolunteerActivity.this,
+                            AttendanceActivity.class
+                    );
+
             startActivity(intent);
         });
 
         btnVolunteerProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    VolunteerActivity.this,
-                    Profile.class
-            );
+
+            Intent intent =
+                    new Intent(
+                            VolunteerActivity.this,
+                            Profile.class
+                    );
+
             startActivity(intent);
         });
 
         btnVolunteerSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    VolunteerActivity.this,
-                    SettingsActivity.class
-            );
+
+            Intent intent =
+                    new Intent(
+                            VolunteerActivity.this,
+                            SettingsActivity.class
+                    );
+
             startActivity(intent);
         });
     }
@@ -83,9 +131,12 @@ public class VolunteerActivity extends AppCompatActivity {
             return false;
         }
 
-        String email = mAuth.getCurrentUser().getEmail();
+        String email =
+                mAuth.getCurrentUser().getEmail();
 
         return email != null
-                && email.equalsIgnoreCase(VOLUNTEER_EMAIL);
+                && email.equalsIgnoreCase(
+                VOLUNTEER_EMAIL
+        );
     }
 }

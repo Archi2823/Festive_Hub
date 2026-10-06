@@ -1,24 +1,25 @@
 package com.archi.festive_hub;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class VolunteerScanner extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-
-    private TextView tvResult;
-    private Button btnScan;
 
     private static final String VOLUNTEER_EMAIL =
             "test@gmail.com";
@@ -31,22 +32,25 @@ public class VolunteerScanner extends AppCompatActivity {
 
                         if (result.getContents() == null) {
 
-                            tvResult.setText(
-                                    "Scan cancelled"
-                            );
+                            Toast.makeText(
+                                    this,
+                                    "Scan cancelled",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
                             return;
                         }
 
-                        String qrData =
-                                result.getContents();
-
-                        verifyQrCode(qrData);
+                        processQrCode(
+                                result.getContents()
+                        );
                     }
             );
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(
+            Bundle savedInstanceState
+    ) {
 
         super.onCreate(savedInstanceState);
 
@@ -54,30 +58,26 @@ public class VolunteerScanner extends AppCompatActivity {
                 R.layout.activity_volunteer_scanner
         );
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        mAuth =
+                FirebaseAuth.getInstance();
 
-        tvResult = findViewById(R.id.tvResult);
-        btnScan = findViewById(R.id.btnScan);
+        db =
+                FirebaseFirestore.getInstance();
 
-        /*
-         * Check volunteer access
-         */
         if (!isVolunteer()) {
 
             Toast.makeText(
                     this,
                     "Volunteer access only",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
             ).show();
 
             finish();
+
             return;
         }
 
-        btnScan.setOnClickListener(
-                v -> startScanner()
-        );
+        startScanner();
     }
 
     private boolean isVolunteer() {
@@ -101,210 +101,348 @@ public class VolunteerScanner extends AppCompatActivity {
                 new ScanOptions();
 
         options.setPrompt(
-                "Scan the user's event QR code"
+                "Scan the user's unique event QR code"
         );
 
         options.setBeepEnabled(true);
 
-        options.setOrientationLocked(true);
+        options.setOrientationLocked(false);
 
-        options.setDesiredBarcodeFormats(
-                ScanOptions.QR_CODE
+        options.setCaptureActivity(
+                com.journeyapps.barcodescanner.CaptureActivity.class
         );
 
         barcodeLauncher.launch(options);
     }
 
-    private void verifyQrCode(String qrData) {
+    private void processQrCode(
+            String qrData
+    ) {
 
-        if (qrData == null ||
-                !qrData.startsWith(
-                        "FESTIVE_HUB|EVENT|"
-                )) {
+        if (qrData == null
+                || qrData.trim().isEmpty()) {
 
-            showInvalid(
-                    "Invalid Festive Hub QR code"
-            );
-
-            return;
-        }
-
-        String[] parts =
-                qrData.split("\\|");
-
-        /*
-         * Expected QR format:
-         *
-         * FESTIVE_HUB|EVENT|Celebrate Together|
-         * REGISTRATION|USER_UID_EVENT_ID
-         */
-
-        if (parts.length < 5 ||
-                !"REGISTRATION".equals(parts[3])) {
-
-            showInvalid(
-                    "Invalid registration QR code"
-            );
+            Toast.makeText(
+                    this,
+                    "Invalid QR code",
+                    Toast.LENGTH_LONG
+            ).show();
 
             return;
         }
 
-        String eventName =
-                parts[2];
+        String prefix =
+                "FESTIVE_HUB|REGISTRATION|";
+
+        if (!qrData.startsWith(prefix)) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid Festive Hub QR code",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
 
         String registrationId =
-                parts[4];
+                qrData.substring(
+                        prefix.length()
+                ).trim();
 
         if (registrationId.isEmpty()) {
 
-            showInvalid(
-                    "Registration ID missing"
-            );
+            Toast.makeText(
+                    this,
+                    "Registration ID missing",
+                    Toast.LENGTH_LONG
+            ).show();
 
             return;
         }
 
-        tvResult.setText(
-                "Checking registration..."
+        checkRegistration(
+                registrationId
         );
+    }
+
+    private void checkRegistration(
+            String registrationId
+    ) {
 
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .get()
                 .addOnSuccessListener(
-                        documentSnapshot -> {
+                        document -> {
 
-                            if (!documentSnapshot.exists()) {
-
-                                showInvalid(
-                                        "Registration not found"
-                                );
-
-                                return;
-                            }
-
-                            String registeredEvent =
-                                    documentSnapshot.getString(
-                                            "eventName"
-                                    );
-
-                            String status =
-                                    documentSnapshot.getString(
-                                            "status"
-                                    );
-
-                            /*
-                             * Check event
-                             */
-
-                            if (registeredEvent == null ||
-                                    !registeredEvent.equals(
-                                            eventName
-                                    )) {
-
-                                showInvalid(
-                                        "Event does not match"
-                                );
-
-                                return;
-                            }
-
-                            /*
-                             * Check registration status
-                             */
-
-                            if ("Checked In".equals(status)) {
-
-                                tvResult.setText(
-                                        "ALREADY CHECKED IN ✓\n\n"
-                                                + "Event: "
-                                                + eventName
-                                );
+                            if (!document.exists()) {
 
                                 Toast.makeText(
                                         this,
-                                        "This attendee is already checked in",
-                                        Toast.LENGTH_SHORT
+                                        "Registration not found",
+                                        Toast.LENGTH_LONG
                                 ).show();
 
                                 return;
                             }
 
-                            if (!"Registered".equals(status)) {
+                            String registeredEventName =
+                                    getStringValue(
+                                            document,
+                                            "eventName"
+                                    );
 
-                                showInvalid(
-                                        "Registration is not active"
-                                );
+                            if (registeredEventName == null) {
+
+                                registeredEventName =
+                                        getStringValue(
+                                                document,
+                                                "name"
+                                        );
+                            }
+
+                            if (registeredEventName == null
+                                    || registeredEventName.trim().isEmpty()) {
+
+                                registeredEventName =
+                                        "Event";
+                            }
+
+                            String status =
+                                    getStringValue(
+                                            document,
+                                            "status"
+                                    );
+
+                            if ("Checked In".equalsIgnoreCase(
+                                    status
+                            )) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Already Checked In",
+                                        Toast.LENGTH_LONG
+                                ).show();
 
                                 return;
                             }
 
-                            /*
-                             * Valid registration
-                             */
+                            if (status != null
+                                    && !status.equalsIgnoreCase(
+                                    "Registered"
+                            )) {
 
-                            markCheckedIn(
+                                Toast.makeText(
+                                        this,
+                                        "Registration status: "
+                                                + status,
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            saveAttendance(
+                                    document,
                                     registrationId,
-                                    registeredEvent
+                                    registeredEventName
                             );
                         }
                 )
-                .addOnFailureListener(
-                        e -> showInvalid(
-                                "Unable to verify registration"
-                        )
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Unable to verify registration",
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
     }
 
-    private void markCheckedIn(
+    private void saveAttendance(
+            DocumentSnapshot registration,
             String registrationId,
             String eventName
     ) {
 
-        db.collection("eventRegistrations")
-                .document(registrationId)
-                .update(
-                        "status",
-                        "Checked In"
-                )
+        if (mAuth.getCurrentUser() == null) {
+
+            Toast.makeText(
+                    this,
+                    "Volunteer login required",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
+        String volunteerEmail =
+                mAuth.getCurrentUser().getEmail();
+
+        String volunteerUid =
+                mAuth.getCurrentUser().getUid();
+
+        String userId =
+                getStringValue(
+                        registration,
+                        "userId"
+                );
+
+        String userName =
+                getStringValue(
+                        registration,
+                        "userName"
+                );
+
+        String userEmail =
+                getStringValue(
+                        registration,
+                        "userEmail"
+                );
+
+        if (userName == null) {
+
+            userName =
+                    getStringValue(
+                            registration,
+                            "name"
+                    );
+        }
+
+        if (userEmail == null) {
+
+            userEmail =
+                    getStringValue(
+                            registration,
+                            "email"
+                    );
+        }
+
+        String eventId =
+                getStringValue(
+                        registration,
+                        "eventId"
+                );
+
+        Map<String, Object> attendance =
+                new HashMap<>();
+
+        attendance.put(
+                "registrationId",
+                registrationId
+        );
+
+        attendance.put(
+                "userId",
+                userId != null
+                        ? userId
+                        : ""
+        );
+
+        attendance.put(
+                "userName",
+                userName != null
+                        ? userName
+                        : "User"
+        );
+
+        attendance.put(
+                "userEmail",
+                userEmail != null
+                        ? userEmail
+                        : ""
+        );
+
+        attendance.put(
+                "eventId",
+                eventId != null
+                        ? eventId
+                        : ""
+        );
+
+        attendance.put(
+                "eventName",
+                eventName
+        );
+
+        attendance.put(
+                "scannedBy",
+                volunteerEmail != null
+                        ? volunteerEmail
+                        : ""
+        );
+
+        attendance.put(
+                "scannedByUid",
+                volunteerUid
+        );
+
+        attendance.put(
+                "status",
+                "Present"
+        );
+
+        attendance.put(
+                "scannedAt",
+                FieldValue.serverTimestamp()
+        );
+
+        WriteBatch batch =
+                db.batch();
+
+        batch.set(
+                db.collection("attendance")
+                        .document(registrationId),
+                attendance
+        );
+
+        batch.update(
+                db.collection("eventRegistrations")
+                        .document(registrationId),
+                "status",
+                "Checked In"
+        );
+
+        batch.commit()
                 .addOnSuccessListener(
                         unused -> {
 
-                            tvResult.setText(
-                                    "✓ ATTENDANCE VERIFIED\n\n"
-                                            + "Event: "
-                                            + eventName
-                                            + "\n\n"
-                                            + "Status: Checked In"
-                            );
-
                             Toast.makeText(
                                     this,
-                                    "Attendance verified successfully!",
-                                    Toast.LENGTH_SHORT
+                                    "✓ ATTENDANCE VERIFIED",
+                                    Toast.LENGTH_LONG
                             ).show();
+
+                            new android.os.Handler()
+                                    .postDelayed(
+                                            this::startScanner,
+                                            1200
+                                    );
                         }
                 )
                 .addOnFailureListener(
-                        e -> showInvalid(
-                                "Unable to mark attendance"
-                        )
+                        e ->
+                                Toast.makeText(
+                                        this,
+                                        "Attendance save failed: "
+                                                + e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show()
                 );
     }
 
-    private void showInvalid(
-            String message
+    private String getStringValue(
+            DocumentSnapshot document,
+            String field
     ) {
 
-        tvResult.setText(
-                "✕ INVALID REGISTRATION\n\n"
-                        + message
-        );
+        Object value =
+                document.get(field);
 
-        Toast.makeText(
-                this,
-                message,
-                Toast.LENGTH_SHORT
-        ).show();
+        if (value == null) {
+            return null;
+        }
+
+        return value.toString();
     }
 }
