@@ -354,23 +354,93 @@ public class Profile extends AppCompatActivity {
             return;
         }
 
-        String qrData =
-                "FESTIVE_HUB|REGISTRATION|" +
-                        registrationId;
+        db.collection("eventRegistrations")
+                .document(registrationId)
+                .get()
+                .addOnSuccessListener(document -> {
 
-        Bitmap qrBitmap =
-                generateQrCode(qrData);
+                    if (!document.exists()) {
 
-        if (qrBitmap == null) {
+                        Toast.makeText(
+                                Profile.this,
+                                "Registration not found",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-            Toast.makeText(
-                    this,
-                    "Unable to generate QR code",
-                    Toast.LENGTH_SHORT
-            ).show();
+                        return;
+                    }
 
-            return;
-        }
+                    String userId =
+                            document.getString("userId");
+
+                    if (mAuth.getCurrentUser() == null ||
+                            userId == null ||
+                            !userId.equals(
+                                    mAuth.getCurrentUser().getUid()
+                            )) {
+
+                        Toast.makeText(
+                                Profile.this,
+                                "Invalid registration",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
+                    }
+
+                    String qrToken =
+                            document.getString("qrToken");
+
+                    if (qrToken == null ||
+                            qrToken.trim().isEmpty()) {
+
+                        Toast.makeText(
+                                Profile.this,
+                                "Secure QR not available. Please register again.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    String qrData =
+                            "FESTIVE_HUB|SECURE|"
+                                    + registrationId
+                                    + "|"
+                                    + qrToken;
+
+                    Bitmap qrBitmap =
+                            generateQrCode(qrData);
+
+                    if (qrBitmap == null) {
+
+                        Toast.makeText(
+                                Profile.this,
+                                "Unable to generate QR code",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
+                    }
+
+                    showQrDialogWithBitmap(
+                            eventName,
+                            qrBitmap
+                    );
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                Profile.this,
+                                "Unable to load secure QR",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
+    }
+
+    private void showQrDialogWithBitmap(
+            String eventName,
+            Bitmap qrBitmap
+    ) {
 
         Dialog dialog =
                 new Dialog(this);
@@ -437,7 +507,7 @@ public class Profile extends AppCompatActivity {
                 new TextView(this);
 
         instruction.setText(
-                "Show this QR code to the volunteer for event verification."
+                "Show this secure QR code to the volunteer for event verification."
         );
 
         instruction.setTextSize(14);

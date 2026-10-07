@@ -101,7 +101,7 @@ public class VolunteerScanner extends AppCompatActivity {
                 new ScanOptions();
 
         options.setPrompt(
-                "Scan the user's unique event QR code"
+                "Scan the user's secure event QR code"
         );
 
         options.setBeepEnabled(true);
@@ -132,13 +132,32 @@ public class VolunteerScanner extends AppCompatActivity {
         }
 
         String prefix =
-                "FESTIVE_HUB|REGISTRATION|";
+                "FESTIVE_HUB|SECURE|";
 
         if (!qrData.startsWith(prefix)) {
 
             Toast.makeText(
                     this,
-                    "Invalid Festive Hub QR code",
+                    "Invalid or old Festive Hub QR code",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
+        String secureData =
+                qrData.substring(
+                        prefix.length()
+                ).trim();
+
+        String[] parts =
+                secureData.split("\\|", -1);
+
+        if (parts.length != 2) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid secure QR format",
                     Toast.LENGTH_LONG
             ).show();
 
@@ -146,9 +165,10 @@ public class VolunteerScanner extends AppCompatActivity {
         }
 
         String registrationId =
-                qrData.substring(
-                        prefix.length()
-                ).trim();
+                parts[0].trim();
+
+        String qrToken =
+                parts[1].trim();
 
         if (registrationId.isEmpty()) {
 
@@ -161,13 +181,26 @@ public class VolunteerScanner extends AppCompatActivity {
             return;
         }
 
+        if (qrToken.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Secure token missing",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
         checkRegistration(
-                registrationId
+                registrationId,
+                qrToken
         );
     }
 
     private void checkRegistration(
-            String registrationId
+            String registrationId,
+            String qrToken
     ) {
 
         db.collection("eventRegistrations")
@@ -181,6 +214,35 @@ public class VolunteerScanner extends AppCompatActivity {
                                 Toast.makeText(
                                         this,
                                         "Registration not found",
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            String storedQrToken =
+                                    getStringValue(
+                                            document,
+                                            "qrToken"
+                                    );
+
+                            if (storedQrToken == null
+                                    || storedQrToken.trim().isEmpty()) {
+
+                                Toast.makeText(
+                                        this,
+                                        "This registration does not have a secure QR",
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            if (!storedQrToken.equals(qrToken)) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Invalid secure QR code",
                                         Toast.LENGTH_LONG
                                 ).show();
 

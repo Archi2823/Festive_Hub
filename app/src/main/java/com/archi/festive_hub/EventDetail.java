@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -274,8 +275,11 @@ public class EventDetail extends AppCompatActivity {
                         documentSnapshot -> {
 
                             if (documentSnapshot.exists()) {
+
                                 updateButtonToJoined();
+
                             } else {
+
                                 updateButtonToJoin();
                             }
                         }
@@ -304,6 +308,9 @@ public class EventDetail extends AppCompatActivity {
         if (registrationId == null) {
             return;
         }
+
+        String qrToken =
+                generateSecureQrToken();
 
         Map<String, Object> registration =
                 new HashMap<>();
@@ -353,6 +360,11 @@ public class EventDetail extends AppCompatActivity {
                 "Registered"
         );
 
+        registration.put(
+                "qrToken",
+                qrToken
+        );
+
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .set(registration)
@@ -375,6 +387,34 @@ public class EventDetail extends AppCompatActivity {
                             Toast.LENGTH_LONG
                     ).show();
                 });
+    }
+
+    private String generateSecureQrToken() {
+
+        SecureRandom secureRandom =
+                new SecureRandom();
+
+        byte[] tokenBytes =
+                new byte[32];
+
+        secureRandom.nextBytes(
+                tokenBytes
+        );
+
+        StringBuilder token =
+                new StringBuilder();
+
+        for (byte b : tokenBytes) {
+
+            token.append(
+                    String.format(
+                            "%02x",
+                            b & 0xff
+                    )
+            );
+        }
+
+        return token.toString();
     }
 
     private void deleteRegistration() {

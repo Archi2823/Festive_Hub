@@ -31,44 +31,19 @@ public class EventQrActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(
-                R.layout.activity_event_qr
-        );
+        setContentView(R.layout.activity_event_qr);
 
-        mAuth =
-                FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        db =
-                FirebaseFirestore.getInstance();
+        ImageButton btnBack = findViewById(R.id.btnBackQr);
+        qrCode = findViewById(R.id.qrCode);
+        txtEventName = findViewById(R.id.txtQrEventName);
+        txtRegistrationInfo = findViewById(R.id.txtRegistrationInfo);
 
-        ImageButton btnBack =
-                findViewById(
-                        R.id.btnBackQr
-                );
+        registrationId = getIntent().getStringExtra("registrationId");
 
-        qrCode =
-                findViewById(
-                        R.id.qrCode
-                );
-
-        txtEventName =
-                findViewById(
-                        R.id.txtQrEventName
-                );
-
-        txtRegistrationInfo =
-                findViewById(
-                        R.id.txtRegistrationInfo
-                );
-
-        registrationId =
-                getIntent().getStringExtra(
-                        "registrationId"
-                );
-
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
+        btnBack.setOnClickListener(v -> finish());
 
         generateEventQr();
     }
@@ -103,66 +78,73 @@ public class EventQrActivity extends AppCompatActivity {
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .get()
-                .addOnSuccessListener(
-                        documentSnapshot -> {
+                .addOnSuccessListener(documentSnapshot -> {
 
-                            if (!documentSnapshot.exists()) {
+                    if (!documentSnapshot.exists()) {
 
-                                Toast.makeText(
-                                        EventQrActivity.this,
-                                        "You are not registered for this event",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                        Toast.makeText(
+                                EventQrActivity.this,
+                                "You are not registered for this event",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                                finish();
-                                return;
-                            }
+                        finish();
+                        return;
+                    }
 
-                            String userId =
-                                    documentSnapshot.getString(
-                                            "userId"
-                                    );
+                    String userId =
+                            documentSnapshot.getString("userId");
 
-                            if (userId == null
-                                    || !userId.equals(
-                                    mAuth.getCurrentUser()
-                                            .getUid()
-                            )) {
+                    if (userId == null
+                            || !userId.equals(
+                            mAuth.getCurrentUser().getUid()
+                    )) {
 
-                                Toast.makeText(
-                                        EventQrActivity.this,
-                                        "Invalid registration",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                        Toast.makeText(
+                                EventQrActivity.this,
+                                "Invalid registration",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                                finish();
-                                return;
-                            }
+                        finish();
+                        return;
+                    }
 
-                            String eventName =
-                                    documentSnapshot.getString(
-                                            "eventName"
-                                    );
+                    String eventName =
+                            documentSnapshot.getString("eventName");
 
-                            if (eventName == null
-                                    || eventName.trim().isEmpty()) {
+                    if (eventName == null
+                            || eventName.trim().isEmpty()) {
 
-                                eventName = "Event";
-                            }
+                        eventName = "Event";
+                    }
 
-                            txtEventName.setText(
-                                    eventName
-                            );
+                    String qrToken =
+                            documentSnapshot.getString("qrToken");
 
-                            txtRegistrationInfo.setText(
-                                    "Show this unique QR code to the volunteer at the event"
-                            );
+                    if (qrToken == null
+                            || qrToken.trim().isEmpty()) {
 
-                            generateQrCode(
-                                    registrationId
-                            );
-                        }
-                )
+                        Toast.makeText(
+                                EventQrActivity.this,
+                                "Secure QR not available. Please register again.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    txtEventName.setText(eventName);
+
+                    txtRegistrationInfo.setText(
+                            "Show this unique QR code to the volunteer at the event"
+                    );
+
+                    generateQrCode(
+                            registrationId,
+                            qrToken
+                    );
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(
                                 EventQrActivity.this,
@@ -173,12 +155,15 @@ public class EventQrActivity extends AppCompatActivity {
     }
 
     private void generateQrCode(
-            String registrationId
+            String registrationId,
+            String qrToken
     ) {
 
         String qrData =
-                "FESTIVE_HUB|REGISTRATION|"
-                        + registrationId;
+                "FESTIVE_HUB|SECURE|"
+                        + registrationId
+                        + "|"
+                        + qrToken;
 
         QRCodeWriter writer =
                 new QRCodeWriter();
@@ -200,13 +185,9 @@ public class EventQrActivity extends AppCompatActivity {
                             Bitmap.Config.RGB_565
                     );
 
-            for (int x = 0;
-                 x < 700;
-                 x++) {
+            for (int x = 0; x < 700; x++) {
 
-                for (int y = 0;
-                     y < 700;
-                     y++) {
+                for (int y = 0; y < 700; y++) {
 
                     bitmap.setPixel(
                             x,
@@ -218,9 +199,7 @@ public class EventQrActivity extends AppCompatActivity {
                 }
             }
 
-            qrCode.setImageBitmap(
-                    bitmap
-            );
+            qrCode.setImageBitmap(bitmap);
 
         } catch (WriterException e) {
 
