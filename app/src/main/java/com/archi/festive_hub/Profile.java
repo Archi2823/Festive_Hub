@@ -41,6 +41,7 @@ public class Profile extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_profile);
 
         mAuth = FirebaseAuth.getInstance();
@@ -53,12 +54,16 @@ public class Profile extends AppCompatActivity {
                 findViewById(R.id.btnProfileMenu);
 
         registeredEventsContainer =
-                findViewById(R.id.registeredEventsContainer);
+                findViewById(
+                        R.id.registeredEventsContainer
+                );
 
         tvNoEvents =
                 findViewById(R.id.tvNoEvents);
 
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(
+                v -> finish()
+        );
 
         setupProfileMenu();
 
@@ -77,7 +82,9 @@ public class Profile extends AppCompatActivity {
                     mAuth.getCurrentUser().getEmail();
 
             if (email == null ||
-                    !email.equalsIgnoreCase(ADMIN_EMAIL)) {
+                    !email.equalsIgnoreCase(
+                            ADMIN_EMAIL
+                    )) {
 
                 return;
             }
@@ -348,12 +355,7 @@ public class Profile extends AppCompatActivity {
         }
 
         String qrData =
-                "FESTIVE_HUB|" +
-                        "EVENT|" +
-                        (eventName != null
-                                ? eventName
-                                : "Event") +
-                        "|REGISTRATION|" +
+                "FESTIVE_HUB|REGISTRATION|" +
                         registrationId;
 
         Bitmap qrBitmap =
