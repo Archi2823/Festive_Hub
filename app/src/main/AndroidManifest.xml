@@ -101,6 +101,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".EditProfile"
+            android:exported="false" />
+
+        <activity
             android:name=".Splash_screen"
             android:exported="true">
 

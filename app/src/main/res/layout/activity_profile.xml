@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:background="#FFF8F2">
 
-
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -52,11 +52,11 @@
 
     </LinearLayout>
 
-
-
+    <!-- Main Content -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true">
 
         <LinearLayout
@@ -65,6 +65,7 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Profile Card -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -83,29 +84,44 @@
                     android:focusable="false"
                     app:tint="#FF7A00" />
 
+                <!-- User Name -->
                 <TextView
-                    android:id="@+id/tvProfileTitle"
+                    android:id="@+id/tvProfileName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="My Events"
+                    android:text="User"
                     android:textColor="#222222"
                     android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:gravity="center" />
 
+                <!-- User Email -->
                 <TextView
+                    android:id="@+id/tvProfileEmail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Your registered events"
+                    android:layout_marginTop="5dp"
+                    android:text="email@example.com"
                     android:textColor="#777777"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:gravity="center" />
+
+                <!-- Edit Profile -->
+                <Button
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="18dp"
+                    android:text="Edit Profile"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="15sp"
+                    android:backgroundTint="#FF7A00" />
 
             </LinearLayout>
 
-
-            <!-- Registered Events -->
-
+            <!-- Registered Events Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -115,7 +131,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-
+            <!-- No Events Message -->
             <TextView
                 android:id="@+id/tvNoEvents"
                 android:layout_width="match_parent"
@@ -127,7 +143,7 @@
                 android:gravity="center"
                 android:visibility="gone" />
 
-
+            <!-- Registered Events Container -->
             <LinearLayout
                 android:id="@+id/registeredEventsContainer"
                 android:layout_width="match_parent"

@@ -18,8 +18,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -36,7 +36,11 @@ public class Profile extends AppCompatActivity {
     private LinearLayout registeredEventsContainer;
     private TextView tvNoEvents;
 
+    private TextView tvProfileName;
+    private TextView tvProfileEmail;
+
     private ImageButton btnProfileMenu;
+    private Button btnEditProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +58,36 @@ public class Profile extends AppCompatActivity {
                 findViewById(R.id.btnProfileMenu);
 
         registeredEventsContainer =
-                findViewById(
-                        R.id.registeredEventsContainer
-                );
+                findViewById(R.id.registeredEventsContainer);
 
         tvNoEvents =
                 findViewById(R.id.tvNoEvents);
 
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
+        tvProfileName =
+                findViewById(R.id.tvProfileName);
+
+        tvProfileEmail =
+                findViewById(R.id.tvProfileEmail);
+
+        btnEditProfile =
+                findViewById(R.id.btnEditProfile);
+
+        btnBack.setOnClickListener(v -> finish());
+
+        btnEditProfile.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            Profile.this,
+                            EditProfile.class
+                    );
+
+            startActivity(intent);
+        });
 
         setupProfileMenu();
+
+        loadUserProfile();
 
         loadRegisteredEvents();
     }
@@ -82,9 +104,7 @@ public class Profile extends AppCompatActivity {
                     mAuth.getCurrentUser().getEmail();
 
             if (email == null ||
-                    !email.equalsIgnoreCase(
-                            ADMIN_EMAIL
-                    )) {
+                    !email.equalsIgnoreCase(ADMIN_EMAIL)) {
 
                 return;
             }
@@ -95,65 +115,87 @@ public class Profile extends AppCompatActivity {
                             btnProfileMenu
                     );
 
-            popupMenu.getMenu().add(
-                    "Admin Panel"
-            );
+            popupMenu.getMenu().add("Admin Panel");
 
-            popupMenu.getMenu().add(
-                    "Volunteer Scanner"
-            );
+            popupMenu.getMenu().add("Volunteer Scanner");
 
-            popupMenu.setOnMenuItemClickListener(
-                    item -> {
+            popupMenu.setOnMenuItemClickListener(item -> {
 
-                        String selected =
-                                item.getTitle().toString();
+                String selected =
+                        item.getTitle().toString();
 
-                        if (selected.equals(
-                                "Admin Panel"
-                        )) {
+                if (selected.equals("Admin Panel")) {
 
-                            Intent intent =
-                                    new Intent(
-                                            Profile.this,
-                                            AdminActivity.class
-                                    );
+                    Intent intent =
+                            new Intent(
+                                    Profile.this,
+                                    AdminActivity.class
+                            );
 
-                            startActivity(intent);
+                    startActivity(intent);
 
-                            return true;
-                        }
+                    return true;
+                }
 
-                        if (selected.equals(
-                                "Volunteer Scanner"
-                        )) {
+                if (selected.equals("Volunteer Scanner")) {
 
-                            Intent intent =
-                                    new Intent(
-                                            Profile.this,
-                                            VolunteerScanner.class
-                                    );
+                    Intent intent =
+                            new Intent(
+                                    Profile.this,
+                                    VolunteerScanner.class
+                            );
 
-                            startActivity(intent);
+                    startActivity(intent);
 
-                            return true;
-                        }
+                    return true;
+                }
 
-                        return false;
-                    }
-            );
+                return false;
+            });
 
             popupMenu.show();
         });
+    }
+
+    private void loadUserProfile() {
+
+        if (mAuth.getCurrentUser() == null) {
+
+            tvProfileName.setText("User");
+
+            tvProfileEmail.setText("Please login");
+
+            return;
+        }
+
+        String name =
+                mAuth.getCurrentUser().getDisplayName();
+
+        String email =
+                mAuth.getCurrentUser().getEmail();
+
+        if (name == null ||
+                name.trim().isEmpty()) {
+
+            name = "User";
+        }
+
+        if (email == null ||
+                email.trim().isEmpty()) {
+
+            email = "Email not available";
+        }
+
+        tvProfileName.setText(name);
+
+        tvProfileEmail.setText(email);
     }
 
     private void loadRegisteredEvents() {
 
         if (mAuth.getCurrentUser() == null) {
 
-            tvNoEvents.setVisibility(
-                    View.VISIBLE
-            );
+            tvNoEvents.setVisibility(View.VISIBLE);
 
             tvNoEvents.setText(
                     "Please login to view your events."
@@ -166,10 +208,7 @@ public class Profile extends AppCompatActivity {
                 mAuth.getCurrentUser().getUid();
 
         db.collection("eventRegistrations")
-                .whereEqualTo(
-                        "userId",
-                        userId
-                )
+                .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
 
@@ -194,8 +233,8 @@ public class Profile extends AppCompatActivity {
                     );
 
                     for (
-                            QueryDocumentSnapshot document :
-                            querySnapshot
+                            DocumentSnapshot document :
+                            querySnapshot.getDocuments()
                     ) {
 
                         String eventName =
@@ -479,13 +518,9 @@ public class Profile extends AppCompatActivity {
         ImageView qrImage =
                 new ImageView(this);
 
-        qrImage.setImageBitmap(
-                qrBitmap
-        );
+        qrImage.setImageBitmap(qrBitmap);
 
-        qrImage.setAdjustViewBounds(
-                true
-        );
+        qrImage.setAdjustViewBounds(true);
 
         LinearLayout.LayoutParams imageParams =
                 new LinearLayout.LayoutParams(
@@ -499,9 +534,7 @@ public class Profile extends AppCompatActivity {
         imageParams.topMargin = 20;
         imageParams.bottomMargin = 20;
 
-        qrImage.setLayoutParams(
-                imageParams
-        );
+        qrImage.setLayoutParams(imageParams);
 
         TextView instruction =
                 new TextView(this);
@@ -517,9 +550,7 @@ public class Profile extends AppCompatActivity {
         Button closeButton =
                 new Button(this);
 
-        closeButton.setText(
-                "Close"
-        );
+        closeButton.setText("Close");
 
         closeButton.setOnClickListener(
                 v -> dialog.dismiss()
@@ -535,9 +566,7 @@ public class Profile extends AppCompatActivity {
         dialog.show();
     }
 
-    private Bitmap generateQrCode(
-            String data
-    ) {
+    private Bitmap generateQrCode(String data) {
 
         QRCodeWriter writer =
                 new QRCodeWriter();
@@ -585,6 +614,10 @@ public class Profile extends AppCompatActivity {
     protected void onResume() {
 
         super.onResume();
+
+        if (tvProfileName != null) {
+            loadUserProfile();
+        }
 
         if (registeredEventsContainer != null) {
             loadRegisteredEvents();
