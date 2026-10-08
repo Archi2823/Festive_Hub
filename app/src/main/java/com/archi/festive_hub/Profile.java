@@ -35,7 +35,7 @@ public class Profile extends AppCompatActivity {
 
     private LinearLayout registeredEventsContainer;
     private TextView tvNoEvents;
-
+    private ImageView ivProfile;
     private TextView tvProfileName;
     private TextView tvProfileEmail;
 
@@ -65,6 +65,12 @@ public class Profile extends AppCompatActivity {
 
         tvProfileName =
                 findViewById(R.id.tvProfileName);
+
+        ivProfile =
+                findViewById(R.id.ivProfile);
+
+        tvProfileEmail =
+                findViewById(R.id.tvProfileEmail);
 
         tvProfileEmail =
                 findViewById(R.id.tvProfileEmail);
@@ -189,9 +195,40 @@ public class Profile extends AppCompatActivity {
         tvProfileName.setText(name);
 
         tvProfileEmail.setText(email);
-    }
 
-    private void loadRegisteredEvents() {
+        String userId =
+                mAuth.getCurrentUser().getUid();
+
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+
+                    if (!document.exists()) {
+                        return;
+                    }
+
+                    String imageUri =
+                            document.getString(
+                                    "profileImageUri"
+                            );
+
+                    if (imageUri != null &&
+                            !imageUri.trim().isEmpty()) {
+
+                        try {
+
+                            ivProfile.setImageURI(
+                                    android.net.Uri.parse(
+                                            imageUri
+                                    )
+                            );
+
+                        } catch (Exception ignored) {
+                        }
+                    }
+                });
+    }    private void loadRegisteredEvents() {
 
         if (mAuth.getCurrentUser() == null) {
 
