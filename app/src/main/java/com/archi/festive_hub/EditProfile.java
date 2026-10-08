@@ -19,6 +19,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EditProfile extends AppCompatActivity {
 
@@ -44,29 +48,19 @@ public class EditProfile extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        etName =
-                findViewById(R.id.etEditName);
-
-        tvEmail =
-                findViewById(R.id.tvEditEmail);
-
-        btnSaveProfile =
-                findViewById(R.id.btnSaveProfile);
-
-        btnBack =
-                findViewById(R.id.btnBackEditProfile);
-
-        ivEditProfile =
-                findViewById(R.id.ivEditProfile);
+        etName = findViewById(R.id.etEditName);
+        tvEmail = findViewById(R.id.tvEditEmail);
+        btnSaveProfile = findViewById(R.id.btnSaveProfile);
+        btnBack = findViewById(R.id.btnBackEditProfile);
+        ivEditProfile = findViewById(R.id.ivEditProfile);
 
         imagePickerLauncher =
                 registerForActivityResult(
                         new ActivityResultContracts.StartActivityForResult(),
                         result -> {
 
-                            if (result.getResultCode() ==
-                                    RESULT_OK &&
-                                    result.getData() != null) {
+                            if (result.getResultCode() == RESULT_OK
+                                    && result.getData() != null) {
 
                                 Uri uri =
                                         result.getData().getData();
@@ -121,8 +115,8 @@ public class EditProfile extends AppCompatActivity {
         );
 
         intent.addFlags(
-                Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
         );
 
         imagePickerLauncher.launch(intent);
@@ -182,10 +176,36 @@ public class EditProfile extends AppCompatActivity {
                         return;
                     }
 
+                    String firestoreName =
+                            document.getString("name");
+
+                    String firestoreEmail =
+                            document.getString("email");
+
                     String imageUri =
                             document.getString(
                                     "profileImageUri"
                             );
+
+                    if (firestoreName != null &&
+                            !firestoreName.trim().isEmpty()) {
+
+                        etName.setText(
+                                firestoreName
+                        );
+
+                        etName.setSelection(
+                                etName.length()
+                        );
+                    }
+
+                    if (firestoreEmail != null &&
+                            !firestoreEmail.trim().isEmpty()) {
+
+                        tvEmail.setText(
+                                firestoreEmail
+                        );
+                    }
 
                     if (imageUri != null &&
                             !imageUri.trim().isEmpty()) {
@@ -280,40 +300,66 @@ public class EditProfile extends AppCompatActivity {
                         return;
                     }
 
-                    saveProfileImage();
-
+                    saveProfileDetails();
                 });
     }
 
-    private void saveProfileImage() {
+    private void saveProfileDetails() {
 
         FirebaseUser user =
                 mAuth.getCurrentUser();
 
         if (user == null) {
+
+            btnSaveProfile.setEnabled(true);
+            btnSaveProfile.setText(
+                    "Save Changes"
+            );
+
             return;
         }
+
+        String name =
+                etName.getText()
+                        .toString()
+                        .trim();
+
+        String email =
+                user.getEmail();
 
         String imageUri =
                 selectedImageUri != null
                         ? selectedImageUri.toString()
                         : "";
 
+        Map<String, Object> userData =
+                new HashMap<>();
+
+        userData.put(
+                "userId",
+                user.getUid()
+        );
+
+        userData.put(
+                "name",
+                name
+        );
+
+        userData.put(
+                "email",
+                email != null ? email : ""
+        );
+
+        userData.put(
+                "profileImageUri",
+                imageUri
+        );
+
         db.collection("users")
                 .document(user.getUid())
                 .set(
-                        new java.util.HashMap<String, Object>() {{
-                            put(
-                                    "userId",
-                                    user.getUid()
-                            );
-
-                            put(
-                                    "profileImageUri",
-                                    imageUri
-                            );
-                        }},
-                        com.google.firebase.firestore.SetOptions.merge()
+                        userData,
+                        SetOptions.merge()
                 )
                 .addOnSuccessListener(unused -> {
 
@@ -339,11 +385,9 @@ public class EditProfile extends AppCompatActivity {
 
                     Toast.makeText(
                             EditProfile.this,
-                            "Name updated, but profile picture could not be saved",
+                            "Unable to save profile details",
                             Toast.LENGTH_LONG
                     ).show();
-
-                    finish();
                 });
     }
 }

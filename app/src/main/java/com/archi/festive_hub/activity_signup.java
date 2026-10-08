@@ -21,8 +21,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class activity_signup extends AppCompatActivity {
 
@@ -33,6 +38,7 @@ public class activity_signup extends AppCompatActivity {
     private TextView txtLogin;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private GoogleSignInClient googleSignInClient;
 
     private final ActivityResultLauncher<Intent> googleSignInLauncher =
@@ -47,14 +53,23 @@ public class activity_signup extends AppCompatActivity {
                         }
 
                         try {
-                            var task = GoogleSignIn
-                                    .getSignedInAccountFromIntent(result.getData());
 
-                            var account = task.getResult(ApiException.class);
+                            var task = GoogleSignIn
+                                    .getSignedInAccountFromIntent(
+                                            result.getData()
+                                    );
+
+                            var account =
+                                    task.getResult(
+                                            ApiException.class
+                                    );
 
                             if (account.getIdToken() == null) {
+
                                 btnGoogle.setEnabled(true);
-                                btnGoogle.setText("Continue with Google");
+                                btnGoogle.setText(
+                                        "Continue with Google"
+                                );
 
                                 Toast.makeText(
                                         activity_signup.this,
@@ -74,8 +89,11 @@ public class activity_signup extends AppCompatActivity {
                             firebaseGoogleLogin(credential);
 
                         } catch (ApiException e) {
+
                             btnGoogle.setEnabled(true);
-                            btnGoogle.setText("Continue with Google");
+                            btnGoogle.setText(
+                                    "Continue with Google"
+                            );
 
                             Toast.makeText(
                                     activity_signup.this,
@@ -89,29 +107,40 @@ public class activity_signup extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_signup);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        etConfirmPassword =
+                findViewById(R.id.etConfirmPassword);
 
         checkTerms = findViewById(R.id.checkTerms);
 
-        btnCreateAccount = findViewById(R.id.btnCreateAccount);
-        btnGoogle = findViewById(R.id.btnGoogle);
-        btnBack = findViewById(R.id.btnBack);
+        btnCreateAccount =
+                findViewById(R.id.btnCreateAccount);
 
-        txtLogin = findViewById(R.id.txtLogin);
+        btnGoogle =
+                findViewById(R.id.btnGoogle);
+
+        btnBack =
+                findViewById(R.id.btnBack);
+
+        txtLogin =
+                findViewById(R.id.txtLogin);
 
         GoogleSignInOptions googleSignInOptions =
                 new GoogleSignInOptions.Builder(
                         GoogleSignInOptions.DEFAULT_SIGN_IN
                 )
                         .requestIdToken(
-                                getString(R.string.default_web_client_id)
+                                getString(
+                                        R.string.default_web_client_id
+                                )
                         )
                         .requestEmail()
                         .build();
@@ -122,17 +151,25 @@ public class activity_signup extends AppCompatActivity {
                         googleSignInOptions
                 );
 
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(
+                v -> finish()
+        );
 
-        btnCreateAccount.setOnClickListener(v -> createAccount());
+        btnCreateAccount.setOnClickListener(
+                v -> createAccount()
+        );
 
-        btnGoogle.setOnClickListener(v -> signInWithGoogle());
+        btnGoogle.setOnClickListener(
+                v -> signInWithGoogle()
+        );
 
         txtLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    activity_signup.this,
-                    login.class
-            );
+
+            Intent intent =
+                    new Intent(
+                            activity_signup.this,
+                            login.class
+                    );
 
             startActivity(intent);
             finish();
@@ -141,130 +178,265 @@ public class activity_signup extends AppCompatActivity {
 
     private void createAccount() {
 
-        String name = etName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString();
-        String confirmPassword = etConfirmPassword.getText().toString();
+        String name =
+                etName.getText()
+                        .toString()
+                        .trim();
+
+        String email =
+                etEmail.getText()
+                        .toString()
+                        .trim();
+
+        String password =
+                etPassword.getText()
+                        .toString();
+
+        String confirmPassword =
+                etConfirmPassword.getText()
+                        .toString();
 
         if (TextUtils.isEmpty(name)) {
-            etName.setError("Please enter your full name");
+
+            etName.setError(
+                    "Please enter your full name"
+            );
+
             etName.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Please enter your email");
+
+            etEmail.setError(
+                    "Please enter your email"
+            );
+
             etEmail.requestFocus();
             return;
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
+        if (!Patterns.EMAIL_ADDRESS
+                .matcher(email)
+                .matches()) {
+
+            etEmail.setError(
+                    "Please enter a valid email"
+            );
+
             etEmail.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(password)) {
-            etPassword.setError("Please enter a password");
+
+            etPassword.setError(
+                    "Please enter a password"
+            );
+
             etPassword.requestFocus();
             return;
         }
 
         if (password.length() < 6) {
+
             etPassword.setError(
                     "Password must be at least 6 characters"
             );
+
             etPassword.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(confirmPassword)) {
+
             etConfirmPassword.setError(
                     "Please confirm your password"
             );
+
             etConfirmPassword.requestFocus();
             return;
         }
 
         if (!password.equals(confirmPassword)) {
+
             etConfirmPassword.setError(
                     "Passwords do not match"
             );
+
             etConfirmPassword.requestFocus();
             return;
         }
 
         if (!checkTerms.isChecked()) {
+
             Toast.makeText(
                     this,
                     "Please agree to the Terms & Conditions",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
 
         btnCreateAccount.setEnabled(false);
-        btnCreateAccount.setText("Creating Account...");
+        btnCreateAccount.setText(
+                "Creating Account..."
+        );
 
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
+        mAuth.createUserWithEmailAndPassword(
+                        email,
+                        password
+                )
+                .addOnCompleteListener(
+                        this,
+                        task -> {
 
-                    btnCreateAccount.setEnabled(true);
-                    btnCreateAccount.setText("CREATE ACCOUNT");
+                            if (!task.isSuccessful()) {
 
-                    if (task.isSuccessful()) {
+                                btnCreateAccount.setEnabled(true);
+                                btnCreateAccount.setText(
+                                        "CREATE ACCOUNT"
+                                );
 
-                        if (mAuth.getCurrentUser() != null) {
+                                String errorMessage =
+                                        task.getException() != null
+                                                ? task.getException()
+                                                .getMessage()
+                                                : "Account creation failed";
+
+                                Toast.makeText(
+                                        activity_signup.this,
+                                        errorMessage,
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            if (mAuth.getCurrentUser() == null) {
+
+                                btnCreateAccount.setEnabled(true);
+                                btnCreateAccount.setText(
+                                        "CREATE ACCOUNT"
+                                );
+
+                                Toast.makeText(
+                                        activity_signup.this,
+                                        "Account created but user data was not found",
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            FirebaseUser user =
+                                    mAuth.getCurrentUser();
 
                             UserProfileChangeRequest profile =
                                     new UserProfileChangeRequest.Builder()
                                             .setDisplayName(name)
                                             .build();
 
-                            mAuth.getCurrentUser()
-                                    .updateProfile(profile);
+                            user.updateProfile(profile)
+                                    .addOnCompleteListener(
+                                            profileTask ->
+                                                    saveUserToFirestore(
+                                                            user,
+                                                            name,
+                                                            email
+                                                    )
+                                    );
                         }
+                );
+    }
 
-                        mAuth.signOut();
+    private void saveUserToFirestore(
+            FirebaseUser user,
+            String name,
+            String email
+    ) {
 
-                        Toast.makeText(
-                                activity_signup.this,
-                                "Account created successfully!",
-                                Toast.LENGTH_SHORT
-                        ).show();
+        Map<String, Object> userData =
+                new HashMap<>();
 
-                        Intent intent = new Intent(
-                                activity_signup.this,
-                                login.class
-                        );
+        userData.put(
+                "userId",
+                user.getUid()
+        );
 
-                        startActivity(intent);
-                        finish();
+        userData.put(
+                "name",
+                name
+        );
 
-                    } else {
+        userData.put(
+                "email",
+                email
+        );
+
+        userData.put(
+                "profileImageUri",
+                ""
+        );
+
+        db.collection("users")
+                .document(user.getUid())
+                .set(userData)
+                .addOnCompleteListener(task -> {
+
+                    btnCreateAccount.setEnabled(true);
+                    btnCreateAccount.setText(
+                            "CREATE ACCOUNT"
+                    );
+
+                    if (!task.isSuccessful()) {
 
                         String errorMessage =
                                 task.getException() != null
-                                        ? task.getException().getMessage()
-                                        : "Account creation failed";
+                                        ? task.getException()
+                                        .getMessage()
+                                        : "Unable to save profile details";
 
                         Toast.makeText(
                                 activity_signup.this,
-                                errorMessage,
+                                "Account created, but profile details could not be saved: "
+                                        + errorMessage,
                                 Toast.LENGTH_LONG
                         ).show();
+
+                        return;
                     }
+
+                    mAuth.signOut();
+
+                    Toast.makeText(
+                            activity_signup.this,
+                            "Account created successfully!",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Intent intent =
+                            new Intent(
+                                    activity_signup.this,
+                                    login.class
+                            );
+
+                    startActivity(intent);
+                    finish();
                 });
     }
 
     private void signInWithGoogle() {
 
         if (!checkTerms.isChecked()) {
+
             Toast.makeText(
                     this,
                     "Please agree to the Terms & Conditions",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
 
@@ -275,53 +447,151 @@ public class activity_signup extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
 
                     Intent signInIntent =
-                            googleSignInClient.getSignInIntent();
+                            googleSignInClient
+                                    .getSignInIntent();
 
-                    googleSignInLauncher.launch(signInIntent);
+                    googleSignInLauncher.launch(
+                            signInIntent
+                    );
                 });
     }
 
-    private void firebaseGoogleLogin(AuthCredential credential) {
+    private void firebaseGoogleLogin(
+            AuthCredential credential
+    ) {
 
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
+                .addOnCompleteListener(
+                        this,
+                        task -> {
 
-                    btnGoogle.setEnabled(true);
-                    btnGoogle.setText("Continue with Google");
+                            btnGoogle.setEnabled(true);
+                            btnGoogle.setText(
+                                    "Continue with Google"
+                            );
 
-                    if (task.isSuccessful()) {
+                            if (!task.isSuccessful()) {
 
-                        Toast.makeText(
-                                activity_signup.this,
-                                "Google account connected successfully!",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                                String errorMessage =
+                                        task.getException() != null
+                                                ? task.getException()
+                                                .getMessage()
+                                                : "Google Sign-In failed";
 
-                        Intent intent = new Intent(
-                                activity_signup.this,
-                                MainActivity.class
-                        );
+                                Toast.makeText(
+                                        activity_signup.this,
+                                        errorMessage,
+                                        Toast.LENGTH_LONG
+                                ).show();
 
-                        intent.setFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK |
-                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        );
+                                return;
+                            }
 
-                        startActivity(intent);
+                            FirebaseUser user =
+                                    mAuth.getCurrentUser();
 
-                    } else {
+                            if (user == null) {
 
-                        String errorMessage =
-                                task.getException() != null
-                                        ? task.getException().getMessage()
-                                        : "Google Sign-In failed";
+                                Toast.makeText(
+                                        activity_signup.this,
+                                        "Unable to get Google user",
+                                        Toast.LENGTH_LONG
+                                ).show();
 
-                        Toast.makeText(
-                                activity_signup.this,
-                                errorMessage,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                                return;
+                            }
+
+                            saveGoogleUserToFirestore(user);
+                        }
+                );
+    }
+
+    private void saveGoogleUserToFirestore(
+            FirebaseUser user
+    ) {
+
+        String name =
+                user.getDisplayName();
+
+        String email =
+                user.getEmail();
+
+        if (name == null ||
+                name.trim().isEmpty()) {
+
+            name = "User";
+        }
+
+        if (email == null ||
+                email.trim().isEmpty()) {
+
+            email = "";
+        }
+
+        Map<String, Object> userData =
+                new HashMap<>();
+
+        userData.put(
+                "userId",
+                user.getUid()
+        );
+
+        userData.put(
+                "name",
+                name
+        );
+
+        userData.put(
+                "email",
+                email
+        );
+
+        db.collection("users")
+                .document(user.getUid())
+                .set(
+                        userData,
+                        com.google.firebase.firestore.SetOptions.merge()
+                )
+                .addOnCompleteListener(
+                        firestoreTask -> {
+
+                            if (!firestoreTask.isSuccessful()) {
+
+                                String errorMessage =
+                                        firestoreTask.getException() != null
+                                                ? firestoreTask.getException()
+                                                .getMessage()
+                                                : "Unable to save profile details";
+
+                                Toast.makeText(
+                                        activity_signup.this,
+                                        "Google login successful, but profile details could not be saved: "
+                                                + errorMessage,
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+                            Toast.makeText(
+                                    activity_signup.this,
+                                    "Google account connected successfully!",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            Intent intent =
+                                    new Intent(
+                                            activity_signup.this,
+                                            MainActivity.class
+                                    );
+
+                            intent.setFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK |
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            );
+
+                            startActivity(intent);
+                        }
+                );
     }
 }
