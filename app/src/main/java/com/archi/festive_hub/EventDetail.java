@@ -1,9 +1,13 @@
+
 package com.archi.festive_hub;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -11,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.security.SecureRandom;
@@ -25,279 +30,249 @@ public class EventDetail extends AppCompatActivity {
     private Button btnBookEvent;
     private Button btnShowQr;
     private Button btnViewGallery;
+    private Button btnShareEvent;
+
+    private ImageView eventBannerImage;
+    private TextView tvEventName;
+    private TextView tvEventDate;
+    private TextView tvEventTime;
+    private TextView tvEventLocation;
+    private TextView tvEventCategory;
+    private TextView tvEventDescription;
 
     private String eventId;
-    private String eventName;
-    private String eventDate;
-    private String eventTime;
-    private String eventLocation;
-    private String category;
-    private String description;
+    private String eventName = "Event";
+    private String eventDate = "";
+    private String eventTime = "";
+    private String eventLocation = "";
+    private String category = "";
+    private String description = "";
+    private String eventLink = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_event_detail);
 
-        setContentView(
-                R.layout.activity_event_detail
-        );
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        mAuth =
-                FirebaseAuth.getInstance();
+        ImageButton btnBack = findViewById(R.id.btnBack);
 
-        db =
-                FirebaseFirestore.getInstance();
-
-        ImageButton btnBack =
-                findViewById(R.id.btnBack);
-
-        btnBookEvent =
-                findViewById(R.id.btnBookEvent);
-
-        btnShowQr =
-                findViewById(R.id.btnShowQr);
+        btnBookEvent = findViewById(R.id.btnBookEvent);
+        btnShowQr = findViewById(R.id.btnShowQr);
         btnViewGallery = findViewById(R.id.btnViewGallery);
+        btnShareEvent = findViewById(R.id.btnShareEvent);
 
-        android.widget.ImageView eventBannerImage = findViewById(R.id.eventBannerImage);
-        android.widget.TextView tvEventName = findViewById(R.id.tvEventName);
-        android.widget.TextView tvEventDate = findViewById(R.id.tvEventDate);
-        android.widget.TextView tvEventTime = findViewById(R.id.tvEventTime);
-        android.widget.TextView tvEventLocation = findViewById(R.id.tvEventLocation);
-        android.widget.TextView tvEventCategory = findViewById(R.id.tvEventCategory);
-        android.widget.TextView tvEventDescription = findViewById(R.id.tvEventDescription);
+        eventBannerImage = findViewById(R.id.eventBannerImage);
+        tvEventName = findViewById(R.id.tvEventName);
+        tvEventDate = findViewById(R.id.tvEventDate);
+        tvEventTime = findViewById(R.id.tvEventTime);
+        tvEventLocation = findViewById(R.id.tvEventLocation);
+        tvEventCategory = findViewById(R.id.tvEventCategory);
+        tvEventDescription = findViewById(R.id.tvEventDescription);
 
-        eventId =
-                getIntent().getStringExtra(
-                        "eventId"
-                );
+        eventId = getIntent().getStringExtra("eventId");
 
-        if (eventId == null ||
-                eventId.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Event not found",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Toast.makeText(this, "Event not found",
+                    Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
-
-        loadEvent();
+        btnBack.setOnClickListener(v -> finish());
 
         btnViewGallery.setOnClickListener(v -> {
-            Intent galleryIntent = new Intent(EventDetail.this, EventGalleryActivity.class);
+            Intent galleryIntent = new Intent(
+                    EventDetail.this,
+                    EventGalleryActivity.class
+            );
             galleryIntent.putExtra("eventId", eventId);
             galleryIntent.putExtra("eventName", eventName);
             startActivity(galleryIntent);
         });
 
+        btnShareEvent.setOnClickListener(v -> shareEvent());
+
         btnBookEvent.setOnClickListener(v -> {
-
-            if (btnBookEvent
-                    .getText()
-                    .toString()
-                    .startsWith("Join")) {
-
+            if (btnBookEvent.getText().toString().startsWith("Join")) {
                 createRegistration();
-
             } else {
-
                 deleteRegistration();
             }
         });
 
-        btnShowQr.setOnClickListener(v -> {
+        btnShowQr.setOnClickListener(v -> showMyQrCode());
 
-            if (mAuth.getCurrentUser() == null) {
-
-                Toast.makeText(
-                        EventDetail.this,
-                        "Please login first",
-                        Toast.LENGTH_SHORT
-                ).show();
-
-                return;
-            }
-
-            String registrationId =
-                    getRegistrationId();
-
-            if (registrationId == null) {
-                return;
-            }
-
-            db.collection(
-                            "eventRegistrations"
-                    )
-                    .document(registrationId)
-                    .get()
-                    .addOnSuccessListener(
-                            documentSnapshot -> {
-
-                                if (documentSnapshot
-                                        .exists()) {
-
-                                    Intent intent =
-                                            new Intent(
-                                                    EventDetail.this,
-                                                    EventQrActivity.class
-                                            );
-
-                                    intent.putExtra(
-                                            "registrationId",
-                                            registrationId
-                                    );
-
-                                    startActivity(intent);
-
-                                } else {
-
-                                    Toast.makeText(
-                                            EventDetail.this,
-                                            "Please join the event first",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                }
-                            }
-                    )
-                    .addOnFailureListener(e ->
-                            Toast.makeText(
-                                    EventDetail.this,
-                                    "Unable to check registration",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
-        });
+        loadEvent();
     }
 
     private void loadEvent() {
-
         db.collection("events")
                 .document(eventId)
                 .get()
-                .addOnSuccessListener(
-                        documentSnapshot -> {
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.exists()) {
+                        Toast.makeText(this, "Event not found",
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                        return;
+                    }
 
-                            if (!documentSnapshot.exists()) {
+                    eventName = readString(snapshot, "eventName", "name");
+                    eventDate = readString(snapshot, "eventDate", "date");
+                    eventTime = readString(snapshot, "eventTime", "time");
+                    eventLocation = readString(
+                            snapshot, "eventLocation", "location");
+                    category = readString(snapshot, "category", null);
+                    description = readString(snapshot, "description", null);
+                    eventLink = readString(snapshot, "eventLink", null);
 
-                                Toast.makeText(
-                                        this,
-                                        "Event not found",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                    tvEventName.setText(eventName);
+                    tvEventDate.setText("📅  " +
+                            (eventDate.isEmpty() ? "Date not available" : eventDate));
+                    tvEventTime.setText("🕐  " +
+                            (eventTime.isEmpty() ? "Time not available" : eventTime));
+                    tvEventLocation.setText("📍  " +
+                            (eventLocation.isEmpty()
+                                    ? "Location not available" : eventLocation));
+                    tvEventCategory.setText(
+                            category.isEmpty() ? "Festivals" : category);
+                    tvEventDescription.setText(
+                            description.isEmpty()
+                                    ? "No description available." : description);
 
-                                finish();
-                                return;
-                            }
+                    String bannerUrl = snapshot.getString("bannerUrl");
+                    if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
+                        Glide.with(this)
+                                .load(bannerUrl)
+                                .centerCrop()
+                                .placeholder(android.R.drawable.ic_menu_gallery)
+                                .error(android.R.drawable.ic_menu_gallery)
+                                .into(eventBannerImage);
+                    } else {
+                        eventBannerImage.setImageResource(
+                                android.R.drawable.ic_menu_gallery);
+                    }
 
-                            eventName =
-                                    documentSnapshot.getString(
-                                            "eventName"
-                                    );
-
-                            eventDate =
-                                    documentSnapshot.getString(
-                                            "eventDate"
-                                    );
-
-                            eventTime =
-                                    documentSnapshot.getString(
-                                            "eventTime"
-                                    );
-
-                            eventLocation =
-                                    documentSnapshot.getString(
-                                            "eventLocation"
-                                    );
-
-                            category =
-                                    documentSnapshot.getString(
-                                            "category"
-                                    );
-
-                            description =
-                                    documentSnapshot.getString(
-                                            "description"
-                                    );
-
-                            String bannerUrl = documentSnapshot.getString("bannerUrl");
-                            android.widget.ImageView eventBannerImage = findViewById(R.id.eventBannerImage);
-                            if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
-                                com.bumptech.glide.Glide.with(this).load(bannerUrl).centerCrop()
-                                        .placeholder(android.R.drawable.ic_menu_gallery)
-                                        .error(android.R.drawable.ic_menu_gallery).into(eventBannerImage);
-                            } else {
-                                eventBannerImage.setImageResource(android.R.drawable.ic_menu_gallery);
-                            }
-                            ((android.widget.TextView) findViewById(R.id.tvEventName)).setText(eventName != null ? eventName : "Event");
-                            ((android.widget.TextView) findViewById(R.id.tvEventDate)).setText("📅  " + (eventDate == null ? "Date not available" : eventDate));
-                            ((android.widget.TextView) findViewById(R.id.tvEventTime)).setText("🕐  " + (eventTime == null ? "Time not available" : eventTime));
-                            ((android.widget.TextView) findViewById(R.id.tvEventLocation)).setText("📍  " + (eventLocation == null ? "Location not available" : eventLocation));
-                            ((android.widget.TextView) findViewById(R.id.tvEventCategory)).setText(category == null || category.isEmpty() ? "Festivals" : category);
-                            ((android.widget.TextView) findViewById(R.id.tvEventDescription)).setText(description == null || description.isEmpty() ? "No description available." : description);
-
-                            if (eventName == null) {
-                                eventName = "Event";
-                            }
-
-                            if (eventDate == null) {
-                                eventDate = "";
-                            }
-
-                            if (eventTime == null) {
-                                eventTime = "";
-                            }
-
-                            if (eventLocation == null) {
-                                eventLocation = "";
-                            }
-
-                            if (category == null) {
-                                category = "";
-                            }
-
-                            if (description == null) {
-                                description = "";
-                            }
-
-                            checkRegistration();
-                        }
-                )
+                    checkRegistration();
+                })
                 .addOnFailureListener(e ->
-                        Toast.makeText(
-                                this,
-                                "Unable to load event",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                        Toast.makeText(this, "Unable to load event",
+                                Toast.LENGTH_SHORT).show());
+    }
+
+    private String readString(
+            DocumentSnapshot snapshot,
+            String primaryField,
+            String fallbackField
+    ) {
+        String value = snapshot.getString(primaryField);
+
+        if ((value == null || value.trim().isEmpty())
+                && fallbackField != null) {
+            value = snapshot.getString(fallbackField);
+        }
+
+        return value == null ? "" : value.trim();
+    }
+
+    private void shareEvent() {
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Toast.makeText(this, "Event link unavailable",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        /*
+         * The eventLink field must contain a real, publicly reachable
+         * HTTPS URL for recipients to open it in a browser.
+         * A custom app URI alone is not a public web link.
+         */
+        String shareUrl = eventLink;
+
+        if (shareUrl.isEmpty()) {
+            Toast.makeText(
+                    this,
+                    "This event does not have a shareable HTTPS link yet.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        StringBuilder message = new StringBuilder();
+        message.append("🎉 ").append(eventName).append("\n\n");
+
+        if (!eventDate.isEmpty()) {
+            message.append("📅 Date: ").append(eventDate).append("\n");
+        }
+
+        if (!eventTime.isEmpty()) {
+            message.append("🕐 Time: ").append(eventTime).append("\n");
+        }
+
+        if (!eventLocation.isEmpty()) {
+            message.append("📍 Location: ").append(eventLocation).append("\n");
+        }
+
+        message.append("\nView event:\n").append(shareUrl);
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, eventName);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, message.toString());
+
+        startActivity(Intent.createChooser(shareIntent, "Share event"));
+    }
+
+    private void showMyQrCode() {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Please login first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String registrationId = getRegistrationId();
+        if (registrationId == null) {
+            return;
+        }
+
+        db.collection("eventRegistrations")
+                .document(registrationId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        Intent intent = new Intent(
+                                EventDetail.this,
+                                EventQrActivity.class
+                        );
+                        intent.putExtra("registrationId", registrationId);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this,
+                                "Please join the event first",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Unable to check registration",
+                                Toast.LENGTH_SHORT).show());
     }
 
     private String getRegistrationId() {
-
-        if (mAuth.getCurrentUser() == null ||
-                eventId == null) {
-
+        if (mAuth.getCurrentUser() == null || eventId == null) {
             return null;
         }
 
-        return mAuth.getCurrentUser().getUid()
-                + "_"
-                + eventId;
+        return mAuth.getCurrentUser().getUid() + "_" + eventId;
     }
 
     private void checkRegistration() {
-
-        String registrationId =
-                getRegistrationId();
+        String registrationId = getRegistrationId();
 
         if (registrationId == null) {
-
             updateButtonToJoin();
             return;
         }
@@ -305,223 +280,103 @@ public class EventDetail extends AppCompatActivity {
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .get()
-                .addOnSuccessListener(
-                        documentSnapshot -> {
-
-                            if (documentSnapshot.exists()) {
-
-                                updateButtonToJoined();
-
-                            } else {
-
-                                updateButtonToJoin();
-                            }
-                        }
-                )
-                .addOnFailureListener(
-                        e -> updateButtonToJoin()
-                );
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        updateButtonToJoined();
+                    } else {
+                        updateButtonToJoin();
+                    }
+                })
+                .addOnFailureListener(e -> updateButtonToJoin());
     }
 
     private void createRegistration() {
-
         if (mAuth.getCurrentUser() == null) {
-
-            Toast.makeText(
-                    this,
-                    "Please login first",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            Toast.makeText(this, "Please login first",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String registrationId =
-                getRegistrationId();
-
+        String registrationId = getRegistrationId();
         if (registrationId == null) {
             return;
         }
 
-        String qrToken =
-                generateSecureQrToken();
-
-        Map<String, Object> registration =
-                new HashMap<>();
-
-        registration.put(
-                "userId",
-                mAuth.getCurrentUser().getUid()
-        );
-
-        registration.put(
-                "eventId",
-                eventId
-        );
-
-        registration.put(
-                "eventName",
-                eventName
-        );
-
-        registration.put(
-                "eventDate",
-                eventDate
-        );
-
-        registration.put(
-                "eventTime",
-                eventTime
-        );
-
-        registration.put(
-                "eventLocation",
-                eventLocation
-        );
-
-        registration.put(
-                "category",
-                category
-        );
-
-        registration.put(
-                "description",
-                description
-        );
-
-        registration.put(
-                "status",
-                "Registered"
-        );
-
-        registration.put(
-                "qrToken",
-                qrToken
-        );
+        Map<String, Object> registration = new HashMap<>();
+        registration.put("userId", mAuth.getCurrentUser().getUid());
+        registration.put("eventId", eventId);
+        registration.put("eventName", eventName);
+        registration.put("eventDate", eventDate);
+        registration.put("eventTime", eventTime);
+        registration.put("eventLocation", eventLocation);
+        registration.put("category", category);
+        registration.put("description", description);
+        registration.put("status", "Registered");
+        registration.put("qrToken", generateSecureQrToken());
 
         db.collection("eventRegistrations")
                 .document(registrationId)
                 .set(registration)
                 .addOnSuccessListener(unused -> {
-
-                    Toast.makeText(
-                            EventDetail.this,
+                    Toast.makeText(this,
                             "Successfully joined the event!",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
+                            Toast.LENGTH_SHORT).show();
                     updateButtonToJoined();
                 })
-                .addOnFailureListener(e -> {
-
-                    Toast.makeText(
-                            EventDetail.this,
-                            "Registration failed: "
-                                    + e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Registration failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show());
     }
 
     private String generateSecureQrToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] tokenBytes = new byte[32];
+        secureRandom.nextBytes(tokenBytes);
 
-        SecureRandom secureRandom =
-                new SecureRandom();
-
-        byte[] tokenBytes =
-                new byte[32];
-
-        secureRandom.nextBytes(
-                tokenBytes
-        );
-
-        StringBuilder token =
-                new StringBuilder();
-
+        StringBuilder token = new StringBuilder();
         for (byte b : tokenBytes) {
-
-            token.append(
-                    String.format(
-                            "%02x",
-                            b & 0xff
-                    )
-            );
+            token.append(String.format("%02x", b & 0xff));
         }
 
         return token.toString();
     }
 
     private void deleteRegistration() {
-
-        String registrationId =
-                getRegistrationId();
+        String registrationId = getRegistrationId();
 
         if (registrationId == null) {
             return;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle(
-                        "Cancel Registration"
-                )
-                .setMessage(
-                        "Do you want to leave this event?"
-                )
-                .setPositiveButton(
-                        "Yes",
-                        (dialog, which) -> {
-
-                            db.collection(
-                                            "eventRegistrations"
-                                    )
-                                    .document(
-                                            registrationId
-                                    )
-                                    .delete()
-                                    .addOnSuccessListener(
-                                            unused -> {
-
-                                                Toast.makeText(
-                                                        EventDetail.this,
-                                                        "Registration cancelled",
-                                                        Toast.LENGTH_SHORT
-                                                ).show();
-
-                                                updateButtonToJoin();
-                                            }
-                                    )
-                                    .addOnFailureListener(
-                                            e ->
-                                                    Toast.makeText(
-                                                            EventDetail.this,
-                                                            "Unable to cancel registration",
-                                                            Toast.LENGTH_SHORT
-                                                    ).show()
-                                    );
-                        }
-                )
-                .setNegativeButton(
-                        "No",
-                        null
-                )
+                .setTitle("Cancel Registration")
+                .setMessage("Do you want to leave this event?")
+                .setPositiveButton("Yes", (dialog, which) ->
+                        db.collection("eventRegistrations")
+                                .document(registrationId)
+                                .delete()
+                                .addOnSuccessListener(unused -> {
+                                    Toast.makeText(this,
+                                            "Registration cancelled",
+                                            Toast.LENGTH_SHORT).show();
+                                    updateButtonToJoin();
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this,
+                                                "Unable to cancel registration",
+                                                Toast.LENGTH_SHORT).show()))
+                .setNegativeButton("No", null)
                 .show();
     }
 
     private void updateButtonToJoined() {
-
-        btnBookEvent.setText(
-                "Joined"
-        );
-
+        btnBookEvent.setText("Joined");
         btnBookEvent.setEnabled(true);
     }
 
     private void updateButtonToJoin() {
-
-        btnBookEvent.setText(
-                "Join Event"
-        );
-
+        btnBookEvent.setText("Join Event");
         btnBookEvent.setEnabled(true);
     }
 }
