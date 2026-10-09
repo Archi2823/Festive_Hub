@@ -401,6 +401,7 @@ public class ManageEventsActivity extends AppCompatActivity {
                 );
 
         EditText etEventBannerUrl = dialogView.findViewById(R.id.etEventBannerUrl);
+        EditText etEventGalleryUrls = dialogView.findViewById(R.id.etEventGalleryUrls);
         currentBannerPreview = dialogView.findViewById(R.id.ivEventBanner);
         currentBannerStatus = dialogView.findViewById(R.id.tvBannerUploadStatus);
         Button btnPreviewBanner = dialogView.findViewById(R.id.btnPreviewBanner);
@@ -423,6 +424,18 @@ public class ManageEventsActivity extends AppCompatActivity {
         if (eventId != null) {
             db.collection("events").document(eventId).get().addOnSuccessListener(snapshot -> {
                 String savedUrl = snapshot.getString("bannerUrl");
+                Object galleryValue = snapshot.get("galleryUrls");
+                if (galleryValue instanceof List) {
+                    List<?> savedGalleryUrls = (List<?>) galleryValue;
+                    StringBuilder galleryText = new StringBuilder();
+                    for (Object item : savedGalleryUrls) {
+                        if (item instanceof String && !((String) item).trim().isEmpty()) {
+                            if (galleryText.length() > 0) galleryText.append("\n");
+                            galleryText.append(((String) item).trim());
+                        }
+                    }
+                    etEventGalleryUrls.setText(galleryText.toString());
+                }
                 if (savedUrl != null && !savedUrl.trim().isEmpty()) {
                     existingBannerUrl = savedUrl;
                     etEventBannerUrl.setText(savedUrl);
@@ -586,6 +599,18 @@ public class ManageEventsActivity extends AppCompatActivity {
                                     }
                                 }
 
+                                List<String> galleryUrls = parseGalleryUrls(
+                                        etEventGalleryUrls.getText().toString()
+                                );
+                                for (String galleryUrl : galleryUrls) {
+                                    if (!isValidImageUrl(galleryUrl)) {
+                                        etEventGalleryUrls.setError(
+                                                "Each gallery URL must start with http:// or https://"
+                                        );
+                                        return;
+                                    }
+                                }
+
                                 saveEvent(
                                         dialog,
                                         eventId,
@@ -596,7 +621,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                                         category,
                                         description,
                                         selectedVolunteerEmail,
-                                        etEventBannerUrl.getText().toString().trim()
+                                        etEventBannerUrl.getText().toString().trim(),
+                                        galleryUrls
                                 );
                             }
                     );
@@ -655,7 +681,8 @@ public class ManageEventsActivity extends AppCompatActivity {
             String category,
             String description,
             String assignedVolunteerEmail,
-            String bannerUrl
+            String bannerUrl,
+            List<String> galleryUrls
     ) {
         if (!bannerUrl.isEmpty() && !isValidImageUrl(bannerUrl)) {
             Toast.makeText(this, "Enter a valid http/https image URL", Toast.LENGTH_LONG).show();
@@ -676,8 +703,9 @@ public class ManageEventsActivity extends AppCompatActivity {
         event.put("assignedVolunteerEmail",
                 assignedVolunteerEmail == null ? "" : assignedVolunteerEmail.trim());
 
-        // Save only the URL in Firestore. No image file is uploaded to Firebase Storage.
+        // Save image URLs only. No image files are uploaded to Firebase Storage.
         event.put("bannerUrl", bannerUrl);
+        event.put("galleryUrls", new ArrayList<>(galleryUrls));
 
         DocumentReference eventRef = eventId == null
                 ? db.collection("events").document()
@@ -693,6 +721,17 @@ public class ManageEventsActivity extends AppCompatActivity {
                         "Unable to save event: " + e.getMessage(),
                         Toast.LENGTH_LONG
                 ).show());
+    }
+
+    private List<String> parseGalleryUrls(String rawText) {
+        List<String> urls = new ArrayList<>();
+        if (rawText == null || rawText.trim().isEmpty()) return urls;
+        String[] lines = rawText.split("[\r\n,]+");
+        for (String line : lines) {
+            String url = line.trim();
+            if (!url.isEmpty() && !urls.contains(url)) urls.add(url);
+        }
+        return urls;
     }
 
     private boolean isValidImageUrl(String url) {

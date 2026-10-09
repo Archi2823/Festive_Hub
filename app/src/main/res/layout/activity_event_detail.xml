@@ -16,10 +16,13 @@
             android:layout_width="match_parent"
             android:layout_height="260dp">
 
-            <View
+            <ImageView
+                android:id="@+id/eventBannerImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#F26B21" />
+                android:background="#F26B21"
+                android:contentDescription="Event banner"
+                android:scaleType="centerCrop" />
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -50,6 +53,7 @@
             android:padding="24dp">
 
             <TextView
+                android:id="@+id/tvEventName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Celebrate Together"
@@ -58,6 +62,7 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvEventCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -78,6 +83,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvEventDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="📅  Saturday, 15 August 2026"
@@ -86,6 +92,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvEventTime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
@@ -94,6 +101,7 @@
                     android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tvEventLocation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
@@ -113,6 +121,7 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvEventDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -120,6 +129,16 @@
                 android:text="Join us for a vibrant celebration filled with music, culture, food and unforgettable moments. Bring your friends and family and enjoy an exciting festival experience together."
                 android:textColor="#666666"
                 android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnViewGallery"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:text="View Event Gallery"
+                android:textAllCaps="false"
+                android:textColor="#F26B21"
+                android:backgroundTint="#FFF0E5" />
 
             <Button
                 android:id="@+id/btnBookEvent"

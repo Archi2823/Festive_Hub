@@ -24,6 +24,7 @@ public class EventDetail extends AppCompatActivity {
 
     private Button btnBookEvent;
     private Button btnShowQr;
+    private Button btnViewGallery;
 
     private String eventId;
     private String eventName;
@@ -55,6 +56,7 @@ public class EventDetail extends AppCompatActivity {
 
         btnShowQr =
                 findViewById(R.id.btnShowQr);
+        btnViewGallery = findViewById(R.id.btnViewGallery);
 
         android.widget.ImageView eventBannerImage = findViewById(R.id.eventBannerImage);
         android.widget.TextView tvEventName = findViewById(R.id.tvEventName);
@@ -87,6 +89,13 @@ public class EventDetail extends AppCompatActivity {
         );
 
         loadEvent();
+
+        btnViewGallery.setOnClickListener(v -> {
+            Intent galleryIntent = new Intent(EventDetail.this, EventGalleryActivity.class);
+            galleryIntent.putExtra("eventId", eventId);
+            galleryIntent.putExtra("eventName", eventName);
+            startActivity(galleryIntent);
+        });
 
         btnBookEvent.setOnClickListener(v -> {
 

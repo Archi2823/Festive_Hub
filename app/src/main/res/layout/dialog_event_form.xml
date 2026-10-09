@@ -45,6 +45,30 @@
             android:text="Paste an image URL and tap Preview"
             android:textSize="13sp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Event Gallery Photos"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/etEventGalleryUrls"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="6dp"
+            android:gravity="top|start"
+            android:hint="Paste multiple image URLs, one per line"
+            android:inputType="textUri|textMultiLine"
+            android:minLines="4" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Use direct public image URLs. Separate each photo URL with a new line."
+            android:textSize="12sp" />
+
         <EditText
             android:id="@+id/etEventName"
             android:layout_width="match_parent"

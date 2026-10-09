@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature
@@ -37,6 +38,10 @@
 
         <activity
             android:name=".EventDetail"
+            android:exported="false" />
+
+        <activity
+            android:name=".EventGalleryActivity"
             android:exported="false" />
 
         <activity
