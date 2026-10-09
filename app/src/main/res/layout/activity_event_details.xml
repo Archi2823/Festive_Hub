@@ -1,183 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F9F7">
+    android:background="#FFF9F4"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="260dp">
 
-            <TextView
+            <ImageView
+                android:id="@+id/eventBannerImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#F26B21"
+                android:contentDescription="Event banner"
+                android:scaleType="centerCrop" />
+
+            <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:background="#E8F5E9"
-                android:gravity="center"
-                android:text="‹"
-                android:textColor="#2E7D32"
-                android:textSize="32sp"
-                android:textStyle="bold" />
+                android:layout_margin="20dp"
+                android:background="@drawable/bg_circle_light"
+                android:contentDescription="Back"
+                android:padding="10dp"
+                app:srcCompat="@drawable/ic_arrow_back" />
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Event Details"
-                android:textColor="#1B5E20"
-                android:textSize="22sp"
+                android:layout_gravity="bottom"
+                android:layout_margin="24dp"
+                android:text="✦ FEATURED EVENT"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <View
-                android:layout_width="45dp"
-                android:layout_height="45dp" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvEventName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="Event Name"
-            android:textColor="#1B5E20"
-            android:textSize="27sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Event Information"
-            android:textColor="#757575"
-            android:textSize="14sp" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:background="#FFFFFF"
-            android:elevation="4dp"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:padding="24dp">
 
             <TextView
+                android:id="@+id/tvEventName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="📅  Date"
-                android:textColor="#2E7D32"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvEventDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="N/A"
-                android:textColor="#333333"
-                android:textSize="17sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="16dp"
-                android:background="#E8E8E8" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="⏰  Time"
-                android:textColor="#2E7D32"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvEventTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="N/A"
-                android:textColor="#333333"
-                android:textSize="17sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="16dp"
-                android:background="#E8E8E8" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="📍  Location"
-                android:textColor="#2E7D32"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvEventLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="N/A"
-                android:textColor="#333333"
-                android:textSize="17sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="16dp"
-                android:background="#E8E8E8" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="🏷  Category"
-                android:textColor="#2E7D32"
-                android:textSize="14sp"
+                android:text="Celebrate Together"
+                android:textColor="#222222"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvEventCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tag"
+                android:paddingStart="14dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="6dp"
+                android:text="Festivals"
+                android:textColor="#F26B21"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="N/A"
-                android:textColor="#333333"
-                android:textSize="17sp" />
+                android:layout_marginTop="24dp"
+                android:orientation="vertical">
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvEventDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📅  Saturday, 15 August 2026"
+                    android:textColor="#333333"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="#FFFFFF"
-            android:elevation="4dp"
-            android:orientation="vertical"
-            android:padding="18dp">
+                <TextView
+                    android:id="@+id/tvEventTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="🕐  6:00 PM - 10:00 PM"
+                    android:textColor="#333333"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tvEventLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="📍  City Celebration Ground"
+                    android:textColor="#333333"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="About Event"
-                android:textColor="#1B5E20"
-                android:textSize="18sp"
+                android:layout_marginTop="30dp"
+                android:text="About this event"
+                android:textColor="#222222"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -186,9 +126,31 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:lineSpacingExtra="5dp"
-                android:text="No description available"
-                android:textColor="#555555"
-                android:textSize="16sp" />
+                android:text="Join us for a vibrant celebration filled with music, culture, food and unforgettable moments. Bring your friends and family and enjoy an exciting festival experience together."
+                android:textColor="#666666"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnBookEvent"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/bg_primary_button"
+                android:text="Join Event"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnShowQr"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="12dp"
+                android:text="SHOW MY QR CODE"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#F26B21" />
 
         </LinearLayout>
 

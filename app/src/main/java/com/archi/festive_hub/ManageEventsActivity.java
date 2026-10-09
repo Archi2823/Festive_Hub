@@ -8,13 +8,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Patterns;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -28,6 +32,10 @@ public class ManageEventsActivity extends AppCompatActivity {
     private LinearLayout eventsContainer;
     private TextView tvNoEvents;
     private Button btnAddEvent;
+
+    private ImageView currentBannerPreview;
+    private TextView currentBannerStatus;
+    private String existingBannerUrl = "";
 
     private final List<String> volunteerEmails = new ArrayList<>();
     private final List<String> volunteerNames = new ArrayList<>();
@@ -392,6 +400,42 @@ public class ManageEventsActivity extends AppCompatActivity {
                         R.id.spinnerVolunteer
                 );
 
+        EditText etEventBannerUrl = dialogView.findViewById(R.id.etEventBannerUrl);
+        currentBannerPreview = dialogView.findViewById(R.id.ivEventBanner);
+        currentBannerStatus = dialogView.findViewById(R.id.tvBannerUploadStatus);
+        Button btnPreviewBanner = dialogView.findViewById(R.id.btnPreviewBanner);
+        existingBannerUrl = "";
+
+        btnPreviewBanner.setOnClickListener(v -> {
+            String imageUrl = etEventBannerUrl.getText().toString().trim();
+            if (!isValidImageUrl(imageUrl)) {
+                etEventBannerUrl.setError("Enter a valid http/https image URL");
+                return;
+            }
+            Glide.with(ManageEventsActivity.this)
+                    .load(imageUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_delete)
+                    .into(currentBannerPreview);
+            currentBannerStatus.setText("Image URL preview");
+        });
+
+        if (eventId != null) {
+            db.collection("events").document(eventId).get().addOnSuccessListener(snapshot -> {
+                String savedUrl = snapshot.getString("bannerUrl");
+                if (savedUrl != null && !savedUrl.trim().isEmpty()) {
+                    existingBannerUrl = savedUrl;
+                    etEventBannerUrl.setText(savedUrl);
+                    Glide.with(ManageEventsActivity.this)
+                            .load(savedUrl)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_gallery)
+                            .into(currentBannerPreview);
+                    currentBannerStatus.setText("Existing event image URL loaded");
+                }
+            });
+        }
+
         if (eventId != null) {
 
             etEventName.setText(
@@ -551,7 +595,8 @@ public class ManageEventsActivity extends AppCompatActivity {
                                         location,
                                         category,
                                         description,
-                                        selectedVolunteerEmail
+                                        selectedVolunteerEmail,
+                                        etEventBannerUrl.getText().toString().trim()
                                 );
                             }
                     );
@@ -609,125 +654,61 @@ public class ManageEventsActivity extends AppCompatActivity {
             String location,
             String category,
             String description,
-            String assignedVolunteerEmail
+            String assignedVolunteerEmail,
+            String bannerUrl
     ) {
-
-        Map<String, Object> event =
-                new HashMap<>();
-
-        event.put(
-                "name",
-                name
-        );
-
-        event.put(
-                "eventName",
-                name
-        );
-
-        event.put(
-                "date",
-                date
-        );
-
-        event.put(
-                "eventDate",
-                date
-        );
-
-        event.put(
-                "time",
-                time
-        );
-
-        event.put(
-                "eventTime",
-                time
-        );
-
-        event.put(
-                "location",
-                location
-        );
-
-        event.put(
-                "eventLocation",
-                location
-        );
-
-        event.put(
-                "category",
-                category
-        );
-
-        event.put(
-                "description",
-                description
-        );
-
-        if (assignedVolunteerEmail != null
-                && !assignedVolunteerEmail.trim().isEmpty()) {
-
-            event.put(
-                    "assignedVolunteerEmail",
-                    assignedVolunteerEmail
-            );
-
-        } else {
-
-            event.put(
-                    "assignedVolunteerEmail",
-                    ""
-            );
+        if (!bannerUrl.isEmpty() && !isValidImageUrl(bannerUrl)) {
+            Toast.makeText(this, "Enter a valid http/https image URL", Toast.LENGTH_LONG).show();
+            return;
         }
 
-        if (eventId == null) {
+        Map<String, Object> event = new HashMap<>();
+        event.put("name", name);
+        event.put("eventName", name);
+        event.put("date", date);
+        event.put("eventDate", date);
+        event.put("time", time);
+        event.put("eventTime", time);
+        event.put("location", location);
+        event.put("eventLocation", location);
+        event.put("category", category);
+        event.put("description", description);
+        event.put("assignedVolunteerEmail",
+                assignedVolunteerEmail == null ? "" : assignedVolunteerEmail.trim());
 
-            db.collection("events")
-                    .add(event)
-                    .addOnSuccessListener(documentReference -> {
+        // Save only the URL in Firestore. No image file is uploaded to Firebase Storage.
+        event.put("bannerUrl", bannerUrl);
 
-                        Toast.makeText(
-                                this,
-                                "Event added successfully",
-                                Toast.LENGTH_SHORT
-                        ).show();
+        DocumentReference eventRef = eventId == null
+                ? db.collection("events").document()
+                : db.collection("events").document(eventId);
 
-                        dialog.dismiss();
-                        loadEvents();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(
-                                    this,
-                                    "Unable to add event",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+        eventRef.set(event, com.google.firebase.firestore.SetOptions.merge())
+                .addOnSuccessListener(unused -> finishEventSave(
+                        dialog,
+                        eventId == null ? "Event added successfully" : "Event updated successfully"
+                ))
+                .addOnFailureListener(e -> Toast.makeText(
+                        ManageEventsActivity.this,
+                        "Unable to save event: " + e.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show());
+    }
 
-        } else {
-
-            db.collection("events")
-                    .document(eventId)
-                    .update(event)
-                    .addOnSuccessListener(unused -> {
-
-                        Toast.makeText(
-                                this,
-                                "Event updated successfully",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        dialog.dismiss();
-                        loadEvents();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(
-                                    this,
-                                    "Unable to update event",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+    private boolean isValidImageUrl(String url) {
+        if (url == null || url.trim().isEmpty() || !Patterns.WEB_URL.matcher(url).matches()) {
+            return false;
         }
+        return url.startsWith("https://") || url.startsWith("http://");
+    }
+
+    private void finishEventSave(AlertDialog dialog, String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        existingBannerUrl = "";
+        currentBannerPreview = null;
+        currentBannerStatus = null;
+        dialog.dismiss();
+        loadEvents();
     }
 
     private void confirmDelete(

@@ -24,7 +24,8 @@
             android:id="@+id/etEventBannerUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Event Banner Image URL"
+            android:layout_marginTop="8dp"
+            android:hint="Paste event image URL"
             android:inputType="textUri"
             android:singleLine="true" />
 
@@ -33,8 +34,16 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:text="Preview Banner"
+            android:text="Preview Image URL"
             android:textAllCaps="false" />
+
+        <TextView
+            android:id="@+id/tvBannerUploadStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Paste an image URL and tap Preview"
+            android:textSize="13sp" />
 
         <EditText
             android:id="@+id/etEventName"

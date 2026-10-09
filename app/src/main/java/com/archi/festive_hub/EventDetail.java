@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -54,6 +55,14 @@ public class EventDetail extends AppCompatActivity {
 
         btnShowQr =
                 findViewById(R.id.btnShowQr);
+
+        android.widget.ImageView eventBannerImage = findViewById(R.id.eventBannerImage);
+        android.widget.TextView tvEventName = findViewById(R.id.tvEventName);
+        android.widget.TextView tvEventDate = findViewById(R.id.tvEventDate);
+        android.widget.TextView tvEventTime = findViewById(R.id.tvEventTime);
+        android.widget.TextView tvEventLocation = findViewById(R.id.tvEventLocation);
+        android.widget.TextView tvEventCategory = findViewById(R.id.tvEventCategory);
+        android.widget.TextView tvEventDescription = findViewById(R.id.tvEventDescription);
 
         eventId =
                 getIntent().getStringExtra(
@@ -207,6 +216,22 @@ public class EventDetail extends AppCompatActivity {
                                     documentSnapshot.getString(
                                             "description"
                                     );
+
+                            String bannerUrl = documentSnapshot.getString("bannerUrl");
+                            android.widget.ImageView eventBannerImage = findViewById(R.id.eventBannerImage);
+                            if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
+                                com.bumptech.glide.Glide.with(this).load(bannerUrl).centerCrop()
+                                        .placeholder(android.R.drawable.ic_menu_gallery)
+                                        .error(android.R.drawable.ic_menu_gallery).into(eventBannerImage);
+                            } else {
+                                eventBannerImage.setImageResource(android.R.drawable.ic_menu_gallery);
+                            }
+                            ((android.widget.TextView) findViewById(R.id.tvEventName)).setText(eventName != null ? eventName : "Event");
+                            ((android.widget.TextView) findViewById(R.id.tvEventDate)).setText("📅  " + (eventDate == null ? "Date not available" : eventDate));
+                            ((android.widget.TextView) findViewById(R.id.tvEventTime)).setText("🕐  " + (eventTime == null ? "Time not available" : eventTime));
+                            ((android.widget.TextView) findViewById(R.id.tvEventLocation)).setText("📍  " + (eventLocation == null ? "Location not available" : eventLocation));
+                            ((android.widget.TextView) findViewById(R.id.tvEventCategory)).setText(category == null || category.isEmpty() ? "Festivals" : category);
+                            ((android.widget.TextView) findViewById(R.id.tvEventDescription)).setText(description == null || description.isEmpty() ? "No description available." : description);
 
                             if (eventName == null) {
                                 eventName = "Event";

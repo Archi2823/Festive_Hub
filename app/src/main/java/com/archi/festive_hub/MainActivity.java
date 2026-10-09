@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -370,13 +371,15 @@ public class MainActivity extends AppCompatActivity {
                             continue;
                         }
 
+                        String bannerUrl = document.getString("bannerUrl");
                         addEventCard(
                                 eventId,
                                 eventName,
                                 eventDate,
                                 eventTime,
                                 eventLocation,
-                                category
+                                category,
+                                bannerUrl
                         );
 
                         eventCount++;
@@ -419,7 +422,8 @@ public class MainActivity extends AppCompatActivity {
             String eventDate,
             String eventTime,
             String eventLocation,
-            String category
+            String category,
+            String bannerUrl
     ) {
 
         LinearLayout card =
@@ -447,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        120
+                        132
                 );
 
         cardParams.setMargins(
@@ -649,6 +653,21 @@ public class MainActivity extends AppCompatActivity {
 
         arrow.setTextSize(28);
 
+        android.widget.ImageView eventImage = new android.widget.ImageView(this);
+        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(82, 96);
+        imageParams.setMargins(0, 0, 10, 0);
+        eventImage.setLayoutParams(imageParams);
+        eventImage.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        eventImage.setBackgroundColor(0xFFF0E6DE);
+        if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
+            Glide.with(this).load(bannerUrl).centerCrop()
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery).into(eventImage);
+        } else {
+            eventImage.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
+
+        card.addView(eventImage);
         card.addView(dateBox);
         card.addView(info);
         card.addView(arrow);
