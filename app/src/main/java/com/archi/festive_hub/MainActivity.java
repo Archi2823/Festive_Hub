@@ -1,3 +1,4 @@
+
 package com.archi.festive_hub;
 
 import android.content.Intent;
@@ -119,6 +120,19 @@ public class MainActivity extends AppCompatActivity {
         btnFilter.setOnClickListener(v ->
                 showFilterDialog()
         );
+
+        // Open Event Schedule screen
+        View cardEventSchedule = findViewById(R.id.cardEventSchedule);
+
+        if (cardEventSchedule != null) {
+            cardEventSchedule.setOnClickListener(v -> {
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        EventScheduleActivity.class
+                );
+                startActivity(intent);
+            });
+        }
 
         etSearchEvents.setOnEditorActionListener(
                 (v, actionId, event) -> {
@@ -371,7 +385,9 @@ public class MainActivity extends AppCompatActivity {
                             continue;
                         }
 
-                        String bannerUrl = document.getString("bannerUrl");
+                        String bannerUrl =
+                                document.getString("bannerUrl");
+
                         addEventCard(
                                 eventId,
                                 eventName,
@@ -653,18 +669,49 @@ public class MainActivity extends AppCompatActivity {
 
         arrow.setTextSize(28);
 
-        android.widget.ImageView eventImage = new android.widget.ImageView(this);
-        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(82, 96);
-        imageParams.setMargins(0, 0, 10, 0);
+        android.widget.ImageView eventImage =
+                new android.widget.ImageView(this);
+
+        LinearLayout.LayoutParams imageParams =
+                new LinearLayout.LayoutParams(
+                        82,
+                        96
+                );
+
+        imageParams.setMargins(
+                0,
+                0,
+                10,
+                0
+        );
+
         eventImage.setLayoutParams(imageParams);
-        eventImage.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+
+        eventImage.setScaleType(
+                android.widget.ImageView.ScaleType.CENTER_CROP
+        );
+
         eventImage.setBackgroundColor(0xFFF0E6DE);
-        if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
-            Glide.with(this).load(bannerUrl).centerCrop()
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery).into(eventImage);
+
+        if (bannerUrl != null &&
+                !bannerUrl.trim().isEmpty()) {
+
+            Glide.with(this)
+                    .load(bannerUrl)
+                    .centerCrop()
+                    .placeholder(
+                            android.R.drawable.ic_menu_gallery
+                    )
+                    .error(
+                            android.R.drawable.ic_menu_gallery
+                    )
+                    .into(eventImage);
+
         } else {
-            eventImage.setImageResource(android.R.drawable.ic_menu_gallery);
+
+            eventImage.setImageResource(
+                    android.R.drawable.ic_menu_gallery
+            );
         }
 
         card.addView(eventImage);
@@ -805,8 +852,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             MainActivity.this,
-                            filters[which] +
-                                    " selected",
+                            filters[which] + " selected",
                             Toast.LENGTH_SHORT
                     ).show();
 
