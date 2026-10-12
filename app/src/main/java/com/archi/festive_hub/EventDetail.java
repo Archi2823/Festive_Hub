@@ -30,7 +30,7 @@ public class EventDetail extends AppCompatActivity {
     private Button btnShowQr;
     private Button btnViewGallery;
     private Button btnShareEvent;
-
+    private Button btnAddToMySchedule;
     private ImageView eventBannerImage;
     private TextView tvEventName;
     private TextView tvEventDate;
@@ -64,6 +64,8 @@ public class EventDetail extends AppCompatActivity {
         btnViewGallery = findViewById(R.id.btnViewGallery);
         btnShareEvent = findViewById(R.id.btnShareEvent);
 
+        btnAddToMySchedule = findViewById(R.id.btnAddToMySchedule);
+
         eventBannerImage = findViewById(R.id.eventBannerImage);
         tvEventName = findViewById(R.id.tvEventName);
         tvEventDate = findViewById(R.id.tvEventDate);
@@ -79,6 +81,10 @@ public class EventDetail extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+
+        if (btnAddToMySchedule != null) {
+            btnAddToMySchedule.setOnClickListener(v -> addToMySchedule());
         }
 
         // Back button
@@ -465,5 +471,108 @@ public class EventDetail extends AppCompatActivity {
             btnBookEvent.setText("Join Event");
             btnBookEvent.setEnabled(true);
         }
+    }
+
+    private void addToMySchedule() {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Please login first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = mAuth.getCurrentUser().getUid();
+
+        String scheduleId = userId + "_" + eventId;
+
+        Map<String, Object> schedule = new HashMap<>();
+        schedule.put("userId", userId);
+        schedule.put("eventId", eventId);
+        schedule.put("eventName", eventName);
+        schedule.put("eventDate", eventDate);
+        schedule.put("eventTime", eventTime);
+        schedule.put("eventLocation", eventLocation);
+        schedule.put("category", category);
+        schedule.put("description", description);
+
+        btnAddToMySchedule.setEnabled(false);
+
+        db.collection("mySchedules")
+                .document(scheduleId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        btnAddToMySchedule.setText("Added to My Schedule");
+                        btnAddToMySchedule.setEnabled(true);
+
+                        Toast.makeText(this,
+                                "This event is already in your schedule",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    db.collection("mySchedules")
+                            .document(scheduleId)
+                            .set(schedule)
+                            .addOnSuccessListener(unused -> {
+                                btnAddToMySchedule.setText(
+                                        "Added to My Schedule");
+                                btnAddToMySchedule.setEnabled(true);
+
+                                Toast.makeText(this,
+                                        "Event added to your schedule!",
+                                        Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                btnAddToMySchedule.setEnabled(true);
+
+                                Toast.makeText(this,
+                                        "Unable to add event to schedule",
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                })
+
+                .addOnFailureListener(e -> {
+                    btnAddToMySchedule.setEnabled(true);
+
+
+                    String errorMessage = "Error Type: "
+                            + e.getClass().getSimpleName()
+                            + "\nMessage: "
+                            + (e.getMessage() != null
+                            ? e.getMessage()
+                            : "No additional details available");
+
+                    android.util.Log.e(
+                            "MySchedule",
+                            "Failed to check schedule",
+                            e
+                    );
+
+                    new AlertDialog.Builder(EventDetail.this)
+                            .setTitle("Schedule Error")
+                            .setMessage(errorMessage)
+                            .setPositiveButton("OK", null)
+                            .show();
+                });
+
+    }
+
+    private void checkMySchedule() {
+        if (mAuth.getCurrentUser() == null || eventId == null) {
+            return;
+        }
+
+        String scheduleId =
+                mAuth.getCurrentUser().getUid() + "_" + eventId;
+
+        db.collection("mySchedules")
+                .document(scheduleId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists() && btnAddToMySchedule != null) {
+                        btnAddToMySchedule.setText(
+                                "Added to My Schedule");
+                    }
+                });
     }
 }

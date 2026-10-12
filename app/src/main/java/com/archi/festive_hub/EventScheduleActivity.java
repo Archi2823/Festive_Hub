@@ -7,6 +7,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,15 +32,33 @@ import java.util.Locale;
 public class EventScheduleActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
+    private FirebaseAuth auth;
+
     private EditText etSearch;
     private LinearLayout eventsContainer;
-    private TextView tvNoEvents, tvEventCount;
+    private TextView tvNoEvents;
+    private TextView tvEventCount;
+    private TextView tvScheduleTitle;
+    private TextView tvScheduleSubtitle;
+    private TextView tvScheduleListHeading;
 
-    private TextView tabAll, tabUpcoming, tabOngoing, tabCompleted;
+    private Button btnMyScheduleMode;
+
+    private TextView tabAll;
+    private TextView tabUpcoming;
+    private TextView tabOngoing;
+    private TextView tabCompleted;
 
     private final List<EventItem> allEvents = new ArrayList<>();
+
     private String selectedFilter = "All";
     private String searchQuery = "";
+
+    // false = all available events
+    // true = events saved by the current user
+    private boolean myScheduleMode = false;
+
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +66,10 @@ public class EventScheduleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_schedule);
 
         db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         ImageButton btnBack = findViewById(R.id.btnScheduleBack);
+
         etSearch = findViewById(R.id.etScheduleSearch);
         eventsContainer = findViewById(R.id.scheduleEventsContainer);
         tvNoEvents = findViewById(R.id.tvScheduleNoEvents);
@@ -58,12 +80,24 @@ public class EventScheduleActivity extends AppCompatActivity {
         tabOngoing = findViewById(R.id.tabScheduleOngoing);
         tabCompleted = findViewById(R.id.tabScheduleCompleted);
 
+        btnMyScheduleMode = findViewById(R.id.btnMyScheduleMode);
+        tvScheduleTitle = findViewById(R.id.tvScheduleTitle);
+        tvScheduleSubtitle = findViewById(R.id.tvScheduleSubtitle);
+        tvScheduleListHeading = findViewById(R.id.tvScheduleListHeading);
+
         btnBack.setOnClickListener(v -> finish());
 
         tabAll.setOnClickListener(v -> selectFilter("All"));
         tabUpcoming.setOnClickListener(v -> selectFilter("Upcoming"));
         tabOngoing.setOnClickListener(v -> selectFilter("Ongoing"));
         tabCompleted.setOnClickListener(v -> selectFilter("Completed"));
+
+        btnMyScheduleMode.setOnClickListener(v -> {
+            myScheduleMode = !myScheduleMode;
+
+            updateScreenMode();
+            loadEvents();
+        });
 
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -74,8 +108,10 @@ public class EventScheduleActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(
                     CharSequence s, int start, int before, int count) {
+
                 searchQuery = s.toString()
                         .trim().toLowerCase(Locale.ROOT);
+
                 renderEvents();
             }
 
@@ -85,6 +121,7 @@ public class EventScheduleActivity extends AppCompatActivity {
         });
 
         selectFilter("All");
+        updateScreenMode();
         loadEvents();
     }
 
@@ -97,54 +134,239 @@ public class EventScheduleActivity extends AppCompatActivity {
         }
     }
 
+    private void updateScreenMode() {
+        if (myScheduleMode) {
+            tvScheduleTitle.setText("My Schedule");
+            tvScheduleSubtitle.setText("Your saved events");
+            tvScheduleListHeading.setText("My Saved Events");
+            btnMyScheduleMode.setText("All Events");
+        } else {
+            tvScheduleTitle.setText("Event Schedule");
+            tvScheduleSubtitle.setText("Find your next celebration");
+            tvScheduleListHeading.setText("All Events");
+            btnMyScheduleMode.setText("My Schedule");
+        }
+
+        tvNoEvents.setText(myScheduleMode
+                ? "You haven't added any events to your schedule yet."
+                : "No events available yet.");
+    }
+
     private void loadEvents() {
+        if (isLoading) {
+            return;
+        }
+
+        if (myScheduleMode && auth.getCurrentUser() == null) {
+            allEvents.clear();
+            renderEvents();
+
+            Toast.makeText(this,
+                    "Please login to view your schedule",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        isLoading = true;
+
+        tvNoEvents.setVisibility(View.GONE);
+
+        if (!myScheduleMode) {
+            loadAllEvents();
+        } else {
+            loadMySchedule();
+        }
+    }
+
+    private void loadAllEvents() {
         db.collection("events")
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     allEvents.clear();
 
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        EventItem item = new EventItem();
-
-                        item.id = doc.getId();
-                        item.name = firstNonEmpty(
-                                doc.getString("eventName"),
-                                doc.getString("name"), "Event");
-
-                        item.date = firstNonEmpty(
-                                doc.getString("eventDate"),
-                                doc.getString("date"), "");
-
-                        item.time = firstNonEmpty(
-                                doc.getString("eventTime"),
-                                doc.getString("time"), "");
-
-                        item.location = firstNonEmpty(
-                                doc.getString("eventLocation"),
-                                doc.getString("location"),
-                                "Location not available");
-
-                        item.category = firstNonEmpty(
-                                doc.getString("category"), "", "");
-
-                        item.bannerUrl = firstNonEmpty(
-                                doc.getString("bannerUrl"), "", "");
-
-                        item.status = getStatus(item.date, item.time);
+                        EventItem item = createEventItem(doc.getId(), doc);
 
                         allEvents.add(item);
                     }
 
+                    isLoading = false;
                     renderEvents();
                 })
                 .addOnFailureListener(e -> {
-                    tvNoEvents.setText("Unable to load events.");
-                    tvNoEvents.setVisibility(View.VISIBLE);
-
-                    Toast.makeText(this,
-                            "Unable to load events",
-                            Toast.LENGTH_SHORT).show();
+                    isLoading = false;
+                    showLoadError("Unable to load events", e);
                 });
+    }
+
+    private void loadMySchedule() {
+        String userId = auth.getCurrentUser().getUid();
+
+        db.collection("mySchedules")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    allEvents.clear();
+
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String savedEventId = doc.getString("eventId");
+
+                        if (savedEventId == null
+                                || savedEventId.trim().isEmpty()) {
+                            continue;
+                        }
+
+                        EventItem item = createSavedEventItem(
+                                savedEventId, doc);
+
+                        allEvents.add(item);
+                    }
+
+                    isLoading = false;
+                    renderEvents();
+                })
+                .addOnFailureListener(e -> {
+                    isLoading = false;
+                    showLoadError(
+                            "Unable to load your saved events", e);
+                });
+    }
+
+    private EventItem createEventItem(
+            String id, DocumentSnapshot doc) {
+
+        EventItem item = new EventItem();
+
+        item.id = id;
+
+        item.name = firstNonEmpty(
+                doc.getString("eventName"),
+                doc.getString("name"),
+                "Event");
+
+        item.date = firstNonEmpty(
+                doc.getString("eventDate"),
+                doc.getString("date"),
+                "");
+
+        item.time = firstNonEmpty(
+                doc.getString("eventTime"),
+                doc.getString("time"),
+                "");
+
+        item.location = firstNonEmpty(
+                doc.getString("eventLocation"),
+                doc.getString("location"),
+                "Location not available");
+
+        item.category = firstNonEmpty(
+                doc.getString("category"),
+                "",
+                "");
+
+        item.bannerUrl = firstNonEmpty(
+                doc.getString("bannerUrl"),
+                "",
+                "");
+
+        item.status = getStatus(item.date, item.time);
+
+        return item;
+    }
+
+    private EventItem createSavedEventItem(
+            String eventId, DocumentSnapshot savedDoc) {
+
+        EventItem item = new EventItem();
+
+        item.id = eventId;
+
+        item.name = firstNonEmpty(
+                savedDoc.getString("eventName"),
+                "",
+                "Event");
+
+        item.date = firstNonEmpty(
+                savedDoc.getString("eventDate"),
+                "",
+                "");
+
+        item.time = firstNonEmpty(
+                savedDoc.getString("eventTime"),
+                "",
+                "");
+
+        item.location = firstNonEmpty(
+                savedDoc.getString("eventLocation"),
+                "",
+                "Location not available");
+
+        item.category = firstNonEmpty(
+                savedDoc.getString("category"),
+                "",
+                "");
+
+        item.bannerUrl = "";
+
+        item.status = getStatus(item.date, item.time);
+
+        // Refresh details from the original event document.
+        // If the event has been deleted or cannot be read,
+        // the saved copy will still be displayed.
+        db.collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(eventDoc -> {
+                    if (eventDoc.exists()) {
+                        item.name = firstNonEmpty(
+                                eventDoc.getString("eventName"),
+                                eventDoc.getString("name"),
+                                item.name);
+
+                        item.date = firstNonEmpty(
+                                eventDoc.getString("eventDate"),
+                                eventDoc.getString("date"),
+                                item.date);
+
+                        item.time = firstNonEmpty(
+                                eventDoc.getString("eventTime"),
+                                eventDoc.getString("time"),
+                                item.time);
+
+                        item.location = firstNonEmpty(
+                                eventDoc.getString("eventLocation"),
+                                eventDoc.getString("location"),
+                                item.location);
+
+                        item.category = firstNonEmpty(
+                                eventDoc.getString("category"),
+                                "",
+                                item.category);
+
+                        item.bannerUrl = firstNonEmpty(
+                                eventDoc.getString("bannerUrl"),
+                                "",
+                                "");
+
+                        item.status = getStatus(item.date, item.time);
+
+                        renderEvents();
+                    }
+                });
+
+        return item;
+    }
+
+    private void showLoadError(String message, Exception e) {
+        tvNoEvents.setText(message + ".");
+
+        tvNoEvents.setVisibility(View.VISIBLE);
+
+        Toast.makeText(this,
+                message + ": " + e.getMessage(),
+                Toast.LENGTH_LONG).show();
+
+        android.util.Log.e("EventSchedule", message, e);
     }
 
     private String firstNonEmpty(
@@ -185,18 +407,20 @@ public class EventScheduleActivity extends AppCompatActivity {
     }
 
     private void renderEvents() {
-        if (eventsContainer == null) return;
+        if (eventsContainer == null) {
+            return;
+        }
 
         eventsContainer.removeAllViews();
+
         int count = 0;
 
         for (EventItem item : allEvents) {
-
             String searchable = (
-                    item.name + " " +
-                            item.location + " " +
-                            item.category + " " +
-                            item.date
+                    item.name + " "
+                            + item.location + " "
+                            + item.category + " "
+                            + item.date
             ).toLowerCase(Locale.ROOT);
 
             if (!searchQuery.isEmpty()
@@ -222,18 +446,23 @@ public class EventScheduleActivity extends AppCompatActivity {
             TextView time = card.findViewById(R.id.tvScheduleTime);
             TextView location = card.findViewById(R.id.tvScheduleLocation);
             TextView status = card.findViewById(R.id.tvScheduleStatus);
+
             android.widget.ImageView image =
                     card.findViewById(R.id.ivScheduleBanner);
 
             day.setText(getDay(item.date));
             month.setText(getMonth(item.date));
             name.setText(item.name);
+
             category.setText(item.category.isEmpty()
                     ? "Event" : item.category);
+
             date.setText(item.date.isEmpty()
                     ? "Date not available" : item.date);
+
             time.setText(item.time.isEmpty()
                     ? "Time not available" : item.time);
+
             location.setText(item.location);
 
             status.setText(item.status);
@@ -266,14 +495,23 @@ public class EventScheduleActivity extends AppCompatActivity {
             count++;
         }
 
-        tvEventCount.setText(count +
-                (count == 1 ? " event" : " events"));
+        tvEventCount.setText(count
+                + (count == 1 ? " event" : " events"));
 
         if (count == 0) {
-            tvNoEvents.setText(allEvents.isEmpty()
-                    ? "No events available yet."
-                    : "No events match this search or filter.");
+            String emptyMessage;
 
+            if (myScheduleMode) {
+                emptyMessage = allEvents.isEmpty()
+                        ? "You haven't added any events to your schedule yet."
+                        : "No saved events match this search or filter.";
+            } else {
+                emptyMessage = allEvents.isEmpty()
+                        ? "No events available yet."
+                        : "No events match this search or filter.";
+            }
+
+            tvNoEvents.setText(emptyMessage);
             tvNoEvents.setVisibility(View.VISIBLE);
         } else {
             tvNoEvents.setVisibility(View.GONE);
@@ -301,8 +539,9 @@ public class EventScheduleActivity extends AppCompatActivity {
     private String getStatus(String dateString, String timeString) {
         Date eventDate = parseDate(dateString);
 
-        // Unknown date format: don't incorrectly mark as completed.
-        if (eventDate == null) return "Upcoming";
+        if (eventDate == null) {
+            return "Upcoming";
+        }
 
         Calendar eventDay = Calendar.getInstance();
         eventDay.setTime(eventDate);
@@ -311,12 +550,19 @@ public class EventScheduleActivity extends AppCompatActivity {
         Calendar today = Calendar.getInstance();
         clearTime(today);
 
-        if (eventDay.before(today)) return "Completed";
-        if (eventDay.after(today)) return "Upcoming";
+        if (eventDay.before(today)) {
+            return "Completed";
+        }
+
+        if (eventDay.after(today)) {
+            return "Upcoming";
+        }
 
         int[] range = parseTimeRange(timeString);
 
-        if (range == null) return "Ongoing";
+        if (range == null) {
+            return "Ongoing";
+        }
 
         Calendar now = Calendar.getInstance();
 
@@ -324,8 +570,13 @@ public class EventScheduleActivity extends AppCompatActivity {
                 now.get(Calendar.HOUR_OF_DAY) * 60
                         + now.get(Calendar.MINUTE);
 
-        if (currentMinutes < range[0]) return "Upcoming";
-        if (currentMinutes > range[1]) return "Completed";
+        if (currentMinutes < range[0]) {
+            return "Upcoming";
+        }
+
+        if (currentMinutes > range[1]) {
+            return "Completed";
+        }
 
         return "Ongoing";
     }
@@ -338,7 +589,9 @@ public class EventScheduleActivity extends AppCompatActivity {
     }
 
     private Date parseDate(String value) {
-        if (value == null || value.trim().isEmpty()) return null;
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
 
         String[] patterns = {
                 "yyyy-MM-dd",
@@ -364,6 +617,7 @@ public class EventScheduleActivity extends AppCompatActivity {
             try {
                 return format.parse(value.trim());
             } catch (ParseException ignored) {
+                // Try next supported date format.
             }
         }
 
@@ -371,16 +625,22 @@ public class EventScheduleActivity extends AppCompatActivity {
     }
 
     private int[] parseTimeRange(String value) {
-        if (value == null || value.trim().isEmpty()) return null;
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
 
         String[] parts = value.split("\\s*[-–—]\\s*");
 
-        if (parts.length < 2) return null;
+        if (parts.length < 2) {
+            return null;
+        }
 
         Integer start = parseTime(parts[0].trim());
         Integer end = parseTime(parts[1].trim());
 
-        if (start == null || end == null) return null;
+        if (start == null || end == null) {
+            return null;
+        }
 
         return new int[]{start, end};
     }
@@ -410,6 +670,7 @@ public class EventScheduleActivity extends AppCompatActivity {
                             + calendar.get(Calendar.MINUTE);
                 }
             } catch (ParseException ignored) {
+                // Try next time format.
             }
         }
 
