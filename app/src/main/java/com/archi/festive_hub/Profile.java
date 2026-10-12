@@ -25,6 +25,8 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import java.security.SecureRandom;
+
 public class Profile extends AppCompatActivity {
 
     private static final String ADMIN_EMAIL =
@@ -467,42 +469,27 @@ public class Profile extends AppCompatActivity {
                     String qrToken =
                             document.getString("qrToken");
 
-                    if (qrToken == null ||
-                            qrToken.trim().isEmpty()) {
+                    // Older registrations may not have a secure QR token.
+                    // Create one and save it to the existing registration.
+                    if (qrToken == null || qrToken.trim().isEmpty()) {
+                        String newToken = generateSecureQrToken();
 
-                        Toast.makeText(
-                                Profile.this,
-                                "Secure QR not available. Please register again.",
-                                Toast.LENGTH_LONG
-                        ).show();
-
-                        return;
-                    }
-
-                    String qrData =
-                            "FESTIVE_HUB|SECURE|"
-                                    + registrationId
-                                    + "|"
-                                    + qrToken;
-
-                    Bitmap qrBitmap =
-                            generateQrCode(qrData);
-
-                    if (qrBitmap == null) {
-
-                        Toast.makeText(
-                                Profile.this,
-                                "Unable to generate QR code",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        document.getReference()
+                                .update("qrToken", newToken)
+                                .addOnSuccessListener(unused ->
+                                        displayQrForToken(eventName,
+                                                registrationId, newToken))
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(
+                                                Profile.this,
+                                                "Could not prepare QR code. Please try again.",
+                                                Toast.LENGTH_LONG
+                                        ).show());
 
                         return;
                     }
 
-                    showQrDialogWithBitmap(
-                            eventName,
-                            qrBitmap
-                    );
+                    displayQrForToken(eventName, registrationId, qrToken);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(
@@ -511,6 +498,37 @@ public class Profile extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
+    }
+
+    private void displayQrForToken(
+            String eventName,
+            String registrationId,
+            String qrToken
+    ) {
+        String qrData = "FESTIVE_HUB|SECURE|"
+                + registrationId + "|" + qrToken;
+
+        Bitmap qrBitmap = generateQrCode(qrData);
+
+        if (qrBitmap == null) {
+            Toast.makeText(this, "Unable to generate QR code",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        showQrDialogWithBitmap(eventName, qrBitmap);
+    }
+
+    private String generateSecureQrToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] tokenBytes = new byte[32];
+        secureRandom.nextBytes(tokenBytes);
+
+        StringBuilder token = new StringBuilder();
+        for (byte b : tokenBytes) {
+            token.append(String.format("%02x", b & 0xff));
+        }
+        return token.toString();
     }
 
     private void showQrDialogWithBitmap(

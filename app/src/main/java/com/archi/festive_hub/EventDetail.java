@@ -2,7 +2,6 @@
 package com.archi.festive_hub;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -57,6 +56,7 @@ public class EventDetail extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // Initialize views
         ImageButton btnBack = findViewById(R.id.btnBack);
 
         btnBookEvent = findViewById(R.id.btnBookEvent);
@@ -81,29 +81,47 @@ public class EventDetail extends AppCompatActivity {
             return;
         }
 
-        btnBack.setOnClickListener(v -> finish());
+        // Back button
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
-        btnViewGallery.setOnClickListener(v -> {
-            Intent galleryIntent = new Intent(
-                    EventDetail.this,
-                    EventGalleryActivity.class
-            );
-            galleryIntent.putExtra("eventId", eventId);
-            galleryIntent.putExtra("eventName", eventName);
-            startActivity(galleryIntent);
-        });
+        // Gallery button
+        if (btnViewGallery != null) {
+            btnViewGallery.setOnClickListener(v -> {
+                Intent galleryIntent = new Intent(
+                        EventDetail.this,
+                        EventGalleryActivity.class
+                );
 
-        btnShareEvent.setOnClickListener(v -> shareEvent());
+                galleryIntent.putExtra("eventId", eventId);
+                galleryIntent.putExtra("eventName", eventName);
 
-        btnBookEvent.setOnClickListener(v -> {
-            if (btnBookEvent.getText().toString().startsWith("Join")) {
-                createRegistration();
-            } else {
-                deleteRegistration();
-            }
-        });
+                startActivity(galleryIntent);
+            });
+        }
 
-        btnShowQr.setOnClickListener(v -> showMyQrCode());
+        // Share button
+        if (btnShareEvent != null) {
+            btnShareEvent.setOnClickListener(v -> shareEvent());
+        }
+
+        // Join / cancel registration button
+        if (btnBookEvent != null) {
+            btnBookEvent.setOnClickListener(v -> {
+                if (btnBookEvent.getText().toString()
+                        .startsWith("Join")) {
+                    createRegistration();
+                } else {
+                    deleteRegistration();
+                }
+            });
+        }
+
+        // QR button
+        if (btnShowQr != null) {
+            btnShowQr.setOnClickListener(v -> showMyQrCode());
+        }
 
         loadEvent();
     }
@@ -113,6 +131,7 @@ public class EventDetail extends AppCompatActivity {
                 .document(eventId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
+
                     if (!snapshot.exists()) {
                         Toast.makeText(this, "Event not found",
                                 Toast.LENGTH_SHORT).show();
@@ -120,54 +139,100 @@ public class EventDetail extends AppCompatActivity {
                         return;
                     }
 
-                    eventName = readString(snapshot, "eventName", "name");
-                    eventDate = readString(snapshot, "eventDate", "date");
-                    eventTime = readString(snapshot, "eventTime", "time");
+                    eventName = readString(
+                            snapshot, "eventName", "name");
+
+                    eventDate = readString(
+                            snapshot, "eventDate", "date");
+
+                    eventTime = readString(
+                            snapshot, "eventTime", "time");
+
                     eventLocation = readString(
                             snapshot, "eventLocation", "location");
-                    category = readString(snapshot, "category", null);
-                    description = readString(snapshot, "description", null);
-                    eventLink = readString(snapshot, "eventLink", null);
 
-                    tvEventName.setText(eventName);
-                    tvEventDate.setText("📅  " +
-                            (eventDate.isEmpty() ? "Date not available" : eventDate));
-                    tvEventTime.setText("🕐  " +
-                            (eventTime.isEmpty() ? "Time not available" : eventTime));
-                    tvEventLocation.setText("📍  " +
-                            (eventLocation.isEmpty()
-                                    ? "Location not available" : eventLocation));
-                    tvEventCategory.setText(
-                            category.isEmpty() ? "Festivals" : category);
-                    tvEventDescription.setText(
-                            description.isEmpty()
-                                    ? "No description available." : description);
+                    category = readString(
+                            snapshot, "category", null);
 
-                    String bannerUrl = snapshot.getString("bannerUrl");
-                    if (bannerUrl != null && !bannerUrl.trim().isEmpty()) {
-                        Glide.with(this)
-                                .load(bannerUrl)
-                                .centerCrop()
-                                .placeholder(android.R.drawable.ic_menu_gallery)
-                                .error(android.R.drawable.ic_menu_gallery)
-                                .into(eventBannerImage);
-                    } else {
-                        eventBannerImage.setImageResource(
-                                android.R.drawable.ic_menu_gallery);
+                    description = readString(
+                            snapshot, "description", null);
+
+                    eventLink = readString(
+                            snapshot, "eventLink", null);
+
+                    // Display event information safely
+                    if (tvEventName != null) {
+                        tvEventName.setText(eventName);
+                    }
+
+                    if (tvEventDate != null) {
+                        tvEventDate.setText("📅  "
+                                + (eventDate.isEmpty()
+                                ? "Date not available" : eventDate));
+                    }
+
+                    if (tvEventTime != null) {
+                        tvEventTime.setText("🕐  "
+                                + (eventTime.isEmpty()
+                                ? "Time not available" : eventTime));
+                    }
+
+                    if (tvEventLocation != null) {
+                        tvEventLocation.setText("📍  "
+                                + (eventLocation.isEmpty()
+                                ? "Location not available"
+                                : eventLocation));
+                    }
+
+                    if (tvEventCategory != null) {
+                        tvEventCategory.setText(
+                                category.isEmpty()
+                                        ? "Festivals" : category);
+                    }
+
+                    if (tvEventDescription != null) {
+                        tvEventDescription.setText(
+                                description.isEmpty()
+                                        ? "No description available."
+                                        : description);
+                    }
+
+                    // Load event banner
+                    if (eventBannerImage != null) {
+                        String bannerUrl =
+                                snapshot.getString("bannerUrl");
+
+                        if (bannerUrl != null
+                                && !bannerUrl.trim().isEmpty()) {
+
+                            Glide.with(this)
+                                    .load(bannerUrl)
+                                    .centerCrop()
+                                    .placeholder(
+                                            android.R.drawable.ic_menu_gallery)
+                                    .error(
+                                            android.R.drawable.ic_menu_gallery)
+                                    .into(eventBannerImage);
+
+                        } else {
+                            eventBannerImage.setImageResource(
+                                    android.R.drawable.ic_menu_gallery);
+                        }
                     }
 
                     checkRegistration();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Unable to load event",
+                        Toast.makeText(this,
+                                "Unable to load event",
                                 Toast.LENGTH_SHORT).show());
     }
 
     private String readString(
             DocumentSnapshot snapshot,
             String primaryField,
-            String fallbackField
-    ) {
+            String fallbackField) {
+
         String value = snapshot.getString(primaryField);
 
         if ((value == null || value.trim().isEmpty())
@@ -185,45 +250,51 @@ public class EventDetail extends AppCompatActivity {
             return;
         }
 
-        /*
-         * The eventLink field must contain a real, publicly reachable
-         * HTTPS URL for recipients to open it in a browser.
-         * A custom app URI alone is not a public web link.
-         */
         String shareUrl = eventLink;
 
         if (shareUrl.isEmpty()) {
             Toast.makeText(
                     this,
-                    "This event does not have a shareable HTTPS link yet.",
+                    "This event does not have a shareable link yet.",
                     Toast.LENGTH_LONG
             ).show();
             return;
         }
 
         StringBuilder message = new StringBuilder();
-        message.append("🎉 ").append(eventName).append("\n\n");
+
+        message.append("🎉 ")
+                .append(eventName)
+                .append("\n\n");
 
         if (!eventDate.isEmpty()) {
-            message.append("📅 Date: ").append(eventDate).append("\n");
+            message.append("📅 Date: ")
+                    .append(eventDate)
+                    .append("\n");
         }
 
         if (!eventTime.isEmpty()) {
-            message.append("🕐 Time: ").append(eventTime).append("\n");
+            message.append("🕐 Time: ")
+                    .append(eventTime)
+                    .append("\n");
         }
 
         if (!eventLocation.isEmpty()) {
-            message.append("📍 Location: ").append(eventLocation).append("\n");
+            message.append("📍 Location: ")
+                    .append(eventLocation)
+                    .append("\n");
         }
 
-        message.append("\nView event:\n").append(shareUrl);
+        message.append("\nView event:\n")
+                .append(shareUrl);
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, eventName);
         shareIntent.putExtra(Intent.EXTRA_TEXT, message.toString());
 
-        startActivity(Intent.createChooser(shareIntent, "Share event"));
+        startActivity(
+                Intent.createChooser(shareIntent, "Share event"));
     }
 
     private void showMyQrCode() {
@@ -234,6 +305,7 @@ public class EventDetail extends AppCompatActivity {
         }
 
         String registrationId = getRegistrationId();
+
         if (registrationId == null) {
             return;
         }
@@ -245,9 +317,11 @@ public class EventDetail extends AppCompatActivity {
                     if (snapshot.exists()) {
                         Intent intent = new Intent(
                                 EventDetail.this,
-                                EventQrActivity.class
-                        );
-                        intent.putExtra("registrationId", registrationId);
+                                EventQrActivity.class);
+
+                        intent.putExtra(
+                                "registrationId", registrationId);
+
                         startActivity(intent);
                     } else {
                         Toast.makeText(this,
@@ -298,12 +372,16 @@ public class EventDetail extends AppCompatActivity {
         }
 
         String registrationId = getRegistrationId();
+
         if (registrationId == null) {
             return;
         }
 
         Map<String, Object> registration = new HashMap<>();
-        registration.put("userId", mAuth.getCurrentUser().getUid());
+
+        registration.put("userId",
+                mAuth.getCurrentUser().getUid());
+
         registration.put("eventId", eventId);
         registration.put("eventName", eventName);
         registration.put("eventDate", eventDate);
@@ -321,20 +399,24 @@ public class EventDetail extends AppCompatActivity {
                     Toast.makeText(this,
                             "Successfully joined the event!",
                             Toast.LENGTH_SHORT).show();
+
                     updateButtonToJoined();
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
-                                "Registration failed: " + e.getMessage(),
+                                "Registration failed: "
+                                        + e.getMessage(),
                                 Toast.LENGTH_LONG).show());
     }
 
     private String generateSecureQrToken() {
         SecureRandom secureRandom = new SecureRandom();
         byte[] tokenBytes = new byte[32];
+
         secureRandom.nextBytes(tokenBytes);
 
         StringBuilder token = new StringBuilder();
+
         for (byte b : tokenBytes) {
             token.append(String.format("%02x", b & 0xff));
         }
@@ -360,6 +442,7 @@ public class EventDetail extends AppCompatActivity {
                                     Toast.makeText(this,
                                             "Registration cancelled",
                                             Toast.LENGTH_SHORT).show();
+
                                     updateButtonToJoin();
                                 })
                                 .addOnFailureListener(e ->
@@ -371,12 +454,16 @@ public class EventDetail extends AppCompatActivity {
     }
 
     private void updateButtonToJoined() {
-        btnBookEvent.setText("Joined");
-        btnBookEvent.setEnabled(true);
+        if (btnBookEvent != null) {
+            btnBookEvent.setText("Joined");
+            btnBookEvent.setEnabled(true);
+        }
     }
 
     private void updateButtonToJoin() {
-        btnBookEvent.setText("Join Event");
-        btnBookEvent.setEnabled(true);
+        if (btnBookEvent != null) {
+            btnBookEvent.setText("Join Event");
+            btnBookEvent.setEnabled(true);
+        }
     }
 }
