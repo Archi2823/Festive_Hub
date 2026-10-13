@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,11 +11,22 @@
         android:id="@+id/imgSplashLogo"
         android:layout_width="180dp"
         android:layout_height="150dp"
-        android:contentDescription="Festuve Hub Logo"
+        android:contentDescription="Festive Hub Logo"
         android:scaleType="fitCenter"
         android:src="@drawable/festuve_logo" />
 
     <TextView
+        android:id="@+id/tvSplashAppName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Festive Hub"
+        android:textColor="#7B2D43"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvSplashTagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
