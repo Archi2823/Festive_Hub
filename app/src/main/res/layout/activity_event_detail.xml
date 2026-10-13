@@ -133,6 +133,93 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
+            <!-- Bookmark and Reminder -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_input"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/btnBookmarkEvent"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:backgroundTint="#FFF0E5"
+                    android:text="♡ Bookmark Event"
+                    android:textAllCaps="false"
+                    android:textColor="#F26B21"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#E8DED6" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Remind Me"
+                            android:textColor="#222222"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Get notified before this event"
+                            android:textColor="#777777"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <Switch
+                        android:id="@+id/switchEventReminder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="Enable event reminder"
+                        android:checked="false"
+                        android:showText="false"
+                        android:thumbTint="#F26B21" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Remind me before"
+                    android:textColor="#444444"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinnerReminderTiming"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:entries="@array/reminder_timing_options"
+                    android:spinnerMode="dropdown" />
+
+            </LinearLayout>
+
             <!-- Gallery -->
             <Button
                 android:id="@+id/btnViewGallery"
@@ -156,7 +243,7 @@
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
-            <!-- Add to My Schedule -->
+            <!-- My Schedule -->
             <Button
                 android:id="@+id/btnAddToMySchedule"
                 android:layout_width="match_parent"

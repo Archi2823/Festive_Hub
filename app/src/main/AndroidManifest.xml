@@ -2,9 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Existing permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Notification permission for Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -40,6 +43,12 @@
             android:name=".EventDetail"
             android:exported="false" />
 
+        <!-- Event reminder receiver -->
+        <receiver
+            android:name=".EventReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".EventGalleryActivity"
             android:exported="false" />
@@ -72,7 +81,8 @@
             android:name=".ManageVolunteersActivity"
             android:exported="false" />
 
-        <activity android:name=".NotificationActivity" />
+        <activity
+            android:name=".NotificationActivity" />
 
         <activity
             android:name=".CollegeListActivity"
